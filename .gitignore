@@ -1,0 +1,14 @@
+# Folders
+/venv/
+/.idea/
+/__pycache__/
+/.vscode/
+
+# Files
+gitlog.txt
+
+# Keys
+*.private*
+*.key*
+*cred*
+
