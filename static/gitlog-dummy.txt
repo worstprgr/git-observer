@@ -1,1 +1,5 @@
-NEED DATA NEED DATA NEED DATA
+otto.mustermann|2023-11-30T07:15:08+01:00|Ottos feature|7ad1e012bf6|origin/dev/Issue-1234-ui-improvements
+susi.mustermann|2023-11-29T14:26:00+01:00|Susis feature|7ad1e016bf6|origin/dev/Issue-1235-ui-improving-improvements
+otto.mustermann|2023-11-29T14:25:44+01:00|Ottos feature|7ad1e016bf6|origin/dev/Issue-1236-new-button-logic
+otto.mustermann|2023-11-29T11:34:34+01:00|Susis feature|434d420a2e9|origin/dev/Issue-1236-new-button-logic
+karl.mustermann|2023-11-29T11:34:20+01:00|Karls Bugfix|3a2f6a6a8e1|origin/bugs/Issue-1237-flickering-when-button-pushed
