@@ -1,5 +1,6 @@
 #!/bin/env python
 from GitObserver import GitObserver
+from GitObserverViewer import GitObserverViewer
 import datetime
 import time
 from argparse import ArgumentParser
@@ -26,7 +27,8 @@ def parse_arguments():
     :return:
     """
     parser = ArgumentParser(allow_abbrev=True)
-    parser.add_argument('-o', '--origin', metavar='origin', default='',
+    parser.add_argument('-o', '--origin', metavar='origin',
+                        default='https://github.com/worstprgr/git-observer/commit/',  # Default to repo at GitHub
                         help='Origin path to build commit link for output', required=False)
     parser.add_argument('-f', '--filepath', action='store',
                         help='Git root to be observed', required=True)
@@ -34,9 +36,16 @@ def parse_arguments():
                         default='.', help='Folder(s) to be observed', required=False)
     parser.add_argument('-ig', '--ignore', metavar='Author', type=str, nargs='+',
                         help='Author name to be ignored')
+    parser.add_argument('-ui', '--show-viewer', action='store_true', default=False,
+                        help='Flag to determine if application should open a grid in UI')
+    parser.add_argument('-desc', '--descending', action='store_true', default=False,
+                        help='Flag if output should be descending. DEFAULT for --use-viewer')
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     parsed_config = parse_arguments()
-    call_commandline(parsed_config)
+    if parsed_config.show_viewer:
+        GitObserverViewer(parsed_config).run()
+    else:
+        call_commandline(parsed_config)
