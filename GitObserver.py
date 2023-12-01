@@ -15,10 +15,12 @@ class GitObserver:
     known_hashes: list[str] = []
 
     def __init__(self, config):
+        # May encapsulate config in exclusive var
         self.origin = config.origin
         self.filepath = config.filepath
         self.logfolders = config.logfolders
         self.ignore = config.ignore
+        self.descending = config.descending
         self.since: str = '1 week ago'
         self.git_fetch = [
             'git',
@@ -46,6 +48,9 @@ class GitObserver:
         ]
 
     def get_git_log_cmd(self, path: str) -> list[str]:
+        sort_flag = '--date-order'
+        if self.descending:
+            sort_flag = '--reverse'
         return [
             'git',
             f'--git-dir={self.filepath}/.git/',
@@ -54,7 +59,7 @@ class GitObserver:
             f'--since={self.since}',
             "--pretty=format:%cn|%cI|%s|%h|%D",
             '--all',
-            '--date-order',
+            sort_flag,
             f'{self.filepath}/{path}'
         ]
 
