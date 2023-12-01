@@ -27,26 +27,28 @@ known_hashes = []
 
 
 class GitObserver:
-    def __init__(self):
-        # Argparse: Parser
-        self.parser = argparse.ArgumentParser(allow_abbrev=True)
-        self.parser.add_argument('-o', '--origin', metavar='origin', help='Origin path to build commit link for output')
-        self.parser.add_argument('-f', '--filepath', action='store')
-        self.parser.add_argument('-lf', '--logfolders', metavar='Path', type=str, nargs='+',
-                                 help='a path to be observed')
-        self.parser.add_argument('-ig', '--ignore', metavar='Author', type=str, nargs='+',
-                                 help='Author name to be ignored')
-        # Argparse: Args
-        self.args = self.parser.parse_args()
+    def __init__(self, args):
+        self.origin = args.origin
+        self.filepath = args.filepath
+        self.logfolders = args.logfolders
+        self.ignore = args.ignore
+        self.since: str = '1 week ago'
+        self.git_fetch  = [
+            'git',
+            f'--git-dir={self.filepath}/.git/',
+            f'--work-tree={self.filepath}',
+            'fetch',
+            '--all'
+        ]
 
         # Paths
         self.gitlog_dummy_file: str = cpaths.GITLOG_DUMMY
 
         # Git relevant
-        self.filepath = self.args.filepath
-        self.logfolders = self.args.logfolders
-        self.ignore = self.args.ignore
-        self.origin = self.args.origin
+        self.filepath = args.filepath
+        self.logfolders = args.logfolders
+        self.ignore = args.ignore
+        self.origin = args.origin
         self.since: str = '1 week ago'
         self.git_fetch: list = [
             'git',
@@ -55,8 +57,7 @@ class GitObserver:
             'fetch',
             '--all'
         ]
-        subprocess.run(self.git_fetch, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        # DEBUG print('Command:', self.git_command)
+
 
     def get_git_log_cmd(self, path: str) -> list:
         return [
@@ -72,6 +73,7 @@ class GitObserver:
         ]
 
     def run(self, test: bool = False) -> str:
+        subprocess.run(self.git_fetch, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for path in self.logfolders:
             response = self.get_log_response(path, test)
             self.handle_log_response(response)
@@ -106,7 +108,7 @@ class GitObserver:
                   f"{cmt.branch}" +
                   f"{self.origin}{cmt.hash}\n")
 
-    def collect_commit_messages(self, response):
+    def collect_commit_messages(self, response) -> list[Commit]:
         global known_hashes, ignore_counter
         ignore_counter = 0
         lines = response.split("\n")
@@ -136,6 +138,9 @@ class GitObserver:
         return messages
 
     def ignore_author(self, author: str) -> bool:
+        if self.ignore is None:
+            return 0
+
         for author_ignore in self.ignore:
             if author == author_ignore:
                 return 1
