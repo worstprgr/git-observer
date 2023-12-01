@@ -1,39 +1,26 @@
 #!/bin/env python
 import datetime
-import time
 import subprocess
-import argparse
-from time import gmtime, strftime
 
 import core.paths as cpaths
 import core.utils as cutils
-
+from core.transport import Commit
+from core.transport import Observation
 
 # Init utils
 FileUtils = cutils.FileUtils()
 
 
-class Commit:
-    author: str
-    date: datetime
-    message: str
-    hash: str
-    branch: str
-
-
-global known_hashes
-global ignore_counter
-known_hashes = []
-
-
 class GitObserver:
-    def __init__(self, args):
-        self.origin = args.origin
-        self.filepath = args.filepath
-        self.logfolders = args.logfolders
-        self.ignore = args.ignore
+    known_hashes: list[str] = []
+
+    def __init__(self, config):
+        self.origin = config.origin
+        self.filepath = config.filepath
+        self.logfolders = config.logfolders
+        self.ignore = config.ignore
         self.since: str = '1 week ago'
-        self.git_fetch  = [
+        self.git_fetch = [
             'git',
             f'--git-dir={self.filepath}/.git/',
             f'--work-tree={self.filepath}',
@@ -45,10 +32,10 @@ class GitObserver:
         self.gitlog_dummy_file: str = cpaths.GITLOG_DUMMY
 
         # Git relevant
-        self.filepath = args.filepath
-        self.logfolders = args.logfolders
-        self.ignore = args.ignore
-        self.origin = args.origin
+        self.filepath = config.filepath
+        self.logfolders = config.logfolders
+        self.ignore = config.ignore
+        self.origin = config.origin
         self.since: str = '1 week ago'
         self.git_fetch: list = [
             'git',
@@ -58,8 +45,7 @@ class GitObserver:
             '--all'
         ]
 
-
-    def get_git_log_cmd(self, path: str) -> list:
+    def get_git_log_cmd(self, path: str) -> list[str]:
         return [
             'git',
             f'--git-dir={self.filepath}/.git/',
@@ -72,11 +58,14 @@ class GitObserver:
             f'{self.filepath}/{path}'
         ]
 
-    def run(self, test: bool = False) -> str:
+    def run(self, test: bool = False) -> list[Observation]:
+        observations: list[Observation] = []
         subprocess.run(self.git_fetch, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for path in self.logfolders:
             response = self.get_log_response(path, test)
-            self.handle_log_response(response)
+            messages = self.handle_log_response(response)
+            observations.append(Observation(path, messages))
+        return observations
 
     def get_log_response(self, path: str, test: bool = False) -> str:
         """
@@ -95,42 +84,41 @@ class GitObserver:
             # Task @ adam: Fill the static/gitlog-dummy.txt with data (anonymize it before committing)
             return FileUtils.simple_fopen(self.gitlog_dummy_file)
 
-    def handle_log_response(self, response: str):
+    def handle_log_response(self, response: str) -> list[Commit]:
         messages = self.collect_commit_messages(response)
 
         if len(messages) == 0:
-            return
+            return []
 
         self.log_message(">>>")
         self.log_message("Found changes:")
         for cmt in messages:
             print(f"{cmt.author} ({cmt.date}): {cmt.message}\n" +
                   f"{cmt.branch}" +
-                  f"{self.origin}{cmt.hash}\n")
+                  f"{cmt.link}\n")
+        return messages
 
     def collect_commit_messages(self, response) -> list[Commit]:
-        global known_hashes, ignore_counter
-        ignore_counter = 0
         lines = response.split("\n")
         messages = []
         for line in lines:
             lineinfo = line.split('|')
 
-            cmt = Commit()
-            cmt.author = lineinfo[0]
-            cmt.date = datetime.datetime.fromisoformat(lineinfo[1])
-            cmt.message = lineinfo[2]
-            cmt.hash = lineinfo[3]
-            cmt.branch = ''
+            author = lineinfo[0]
+            date = datetime.datetime.fromisoformat(lineinfo[1])
+            message = lineinfo[2]
+            commit_hash = lineinfo[3]
+            branch = ''
             if lineinfo[4]:
-                cmt.branch = lineinfo[4] + "\n"
+                branch = lineinfo[4] + "\n"
 
-            if cmt.hash in known_hashes:
+            if commit_hash in self.known_hashes:
                 continue
-            known_hashes.append(cmt.hash)
+            self.known_hashes.append(commit_hash)
 
-            if self.ignore_author(cmt.author):
+            if self.ignore_author(author):
                 continue
+            cmt = Commit(author, date, message, f'{self.origin}{commit_hash}', branch)
             messages.append(cmt)
 
         if len(messages) > 0:
@@ -139,12 +127,12 @@ class GitObserver:
 
     def ignore_author(self, author: str) -> bool:
         if self.ignore is None:
-            return 0
+            return False
 
         for author_ignore in self.ignore:
             if author == author_ignore:
-                return 1
-        return 0
+                return True
+        return False
 
     @staticmethod
     def log_message(message: str):
