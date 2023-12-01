@@ -1,4 +1,4 @@
-name: unittest default
+name: git-observer
 
 on:
   push:
