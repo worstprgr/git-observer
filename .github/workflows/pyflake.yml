@@ -30,8 +30,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install --upgrade pyflakes
+        pip install pyflakes
 
-    - name: Lint with flake8
+    - name: SCA with pyflakes
       run: |
-         python3 pyflakes .
+         pyflakes .
