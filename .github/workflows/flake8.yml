@@ -4,7 +4,7 @@
 # All options:
 #   https://flake8.pycqa.org/en/latest/user/options.html
 
-name: Flake8 Default
+name: Linter
 
 on:
   push:
