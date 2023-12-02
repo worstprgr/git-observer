@@ -107,6 +107,9 @@ class GitObserver:
         lines = response.split("\n")
         messages = []
         for line in lines:
+            if not line:
+                continue
+
             lineinfo = line.split('|')
 
             author = lineinfo[0]
