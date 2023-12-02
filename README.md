@@ -1,3 +1,7 @@
+[![Linter](https://github.com/worstprgr/git-observer/actions/workflows/flake8.yml/badge.svg)](https://github.com/worstprgr/git-observer/actions/workflows/flake8.yml) 
+[![Static CA](https://github.com/worstprgr/git-observer/actions/workflows/pyflake.yml/badge.svg?branch=main)](https://github.com/worstprgr/git-observer/actions/workflows/pyflake.yml) 
+[![Unit Tests](https://github.com/worstprgr/git-observer/actions/workflows/unittest.yml/badge.svg)](https://github.com/worstprgr/git-observer/actions/workflows/unittest.yml) 
+
 # Git Alert
 Python script to observe a directory in a checked-out repository.
 The execution location is indepent from repository, so a automated call is possible.
