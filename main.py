@@ -4,7 +4,7 @@ from GitObserverViewer import GitObserverViewer
 import datetime
 import time
 from argparse import ArgumentParser
-
+from core.paths import BASE_DIR
 
 def call_commandline(config):
     """
@@ -30,8 +30,8 @@ def parse_arguments():
     parser.add_argument('-o', '--origin', metavar='origin',
                         default='https://github.com/worstprgr/git-observer/commit/',  # Default to repo at GitHub
                         help='Origin path to build commit link for output', required=False)
-    parser.add_argument('-f', '--filepath', action='store',
-                        help='Git root to be observed', required=True)
+    parser.add_argument('-f', '--filepath', action='store', default=BASE_DIR,
+                        help='Git root to be observed', required=False)
     parser.add_argument('-lf', '--logfolders', metavar='Folder', type=str, nargs='+',
                         default='.', help='Folder(s) to be observed', required=False)
     parser.add_argument('-ig', '--ignore', metavar='Author', type=str, nargs='+',

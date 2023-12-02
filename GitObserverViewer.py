@@ -1,8 +1,7 @@
-from tkinter import ttk, PhotoImage
+from tkinter import BOTH, BOTTOM, RIGHT, X, Y, ttk, PhotoImage
 from tkinter import Tk
 from tkinter import Frame
 from tkinter import Scrollbar
-from tkinter.constants import *
 from datetime import datetime
 import webbrowser as wb
 
@@ -187,8 +186,8 @@ class GitObserverViewer:
 
         column_names = ['Last updated']
         for folder in observations:
-            column_names.append(f"{folder.name}")
-            column_names.append(f"Link")
+            column_names.append(f'{folder.name}')
+            column_names.append('Link')
 
         # define our column
         self.tv_commits['columns'] = column_names
