@@ -100,7 +100,7 @@ class GitObserver:
         for cmt in messages:
             print(f"{cmt.author} ({cmt.date}): {cmt.message}\n" +
                   f"{cmt.branch}" +
-                  f"{cmt.link}\n")
+                  f"{self.origin}{cmt.sha1}\n")
         return messages
 
     def collect_commit_messages(self, response) -> list[Commit]:
@@ -123,7 +123,7 @@ class GitObserver:
 
             if self.ignore_author(author):
                 continue
-            cmt = Commit(author, date, message, f'{self.origin}{commit_hash}', branch)
+            cmt = Commit(author, date, message, commit_hash, branch)
             messages.append(cmt)
 
         if len(messages) > 0:
@@ -138,6 +138,36 @@ class GitObserver:
             if author == author_ignore:
                 return True
         return False
+
+    def get_git_show_cmd(self, sha1: str) -> list[str]:
+        """
+        Builds a list of arguments passed to subprocess,
+        that represent a call of git show on configured directory
+        using specific SHA1 identifier
+        :param sha1: SHA1
+        :return: git show arguments
+        """
+        return [
+            'git',
+            f'--git-dir={self.filepath}/.git/',
+            f'--work-tree={self.filepath}',
+            'show',
+            '--pretty=medium',
+            '-s',
+            sha1
+        ]
+
+    def get_git_show(self, sha1: str) -> str:
+        """
+        Returns single commit identified by param SHA1
+        using git command line
+        :param sha1: SHA1
+        :return: git show result
+        """
+        git_show_cmd = self.get_git_show_cmd(sha1)
+        # Should be a utility for external calls instead of redundant
+        response = subprocess.run(git_show_cmd, stdout=subprocess.PIPE)
+        return response.stdout.decode("utf-8")
 
     @staticmethod
     def log_message(message: str):
