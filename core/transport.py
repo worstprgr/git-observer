@@ -10,22 +10,22 @@ class Commit:
     author: str
     date: datetime
     message: str
-    hash: str
+    sha1: str
     branch: str
 
-    def __init__(self, author: str, date: datetime, message: str, commit_link: str = None, branch: str = None):
+    def __init__(self, author: str, date: datetime, message: str, commit_hash: str = None, branch: str = None):
         """
         Instantiates a new instance of Commit
         :param author: committer name
         :param date: time stamp
         :param message: summary text
-        :param commit_link: generated link using commit hash and argument 'origin'
+        :param commit_hash: generated link using commit hash and argument 'origin'
         :param branch: branch name, if given
         """
         self.author = author
         self.date = date
         self.message = message
-        self.link = commit_link
+        self.sha1 = commit_hash
         self.branch = branch
 
 

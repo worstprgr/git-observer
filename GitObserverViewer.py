@@ -1,12 +1,13 @@
+import webbrowser as wb
+from datetime import datetime
 from tkinter import BOTH, BOTTOM, RIGHT, X, Y, ttk, PhotoImage
-from tkinter import Tk
 from tkinter import Frame
 from tkinter import Scrollbar
-from datetime import datetime
-import webbrowser as wb
+from tkinter import Tk
 
-from core.transport import Observation
 from GitObserver import GitObserver
+from core.transport import Observation
+from core.utils import TkUtils
 
 
 def is_empty(observations: list[Observation]):
@@ -27,81 +28,31 @@ def is_empty(observations: list[Observation]):
     return True
 
 
-def open_link(event):
-    """
-    Event handler for TreeView purpose.
-    Will expect third and then every second column value to represent
-    a web link.
-    Does nothing when different column is hit or link is empty
-    :param event: Mouse click event
-    :return: None
-    """
-    # Get the associated TreeView widget
-    tree = event.widget
-    # Try to get region by mouse event args
-    region = tree.identify_region(event.x, event.y)
-    col = tree.identify_column(event.x)
-    iid = tree.identify('item', event.x, event.y)
-    col_num = int(col.split('#')[1])
-    # Return on Date click
-    if col_num == 0:
-        return
-
-    # Minus first column (last update), then every second col is a link col
-    if region == 'cell' and (col_num - 1) % 2 == 0:
-        # Extract link from clicked and found cell
-        link = tree.item(iid)['values'][col_num - 1]
-        if len(link) > 0:
-            # open the link in default browser
-            wb.open_new_tab(link)
-
-
-def create_form() -> Tk:
-    """
-    Creates a Tk form with the width of 70% of current screen and
-    height of 50% of current screen and sets the location to b started centered
-    :return:
-    """
-    # Create root window
-    root = Tk()
-    # Open PhotoImage to be passed to created form
-    icon = PhotoImage(file="static/favicon.png")
-    root.iconphoto(True, icon)
-    root.title('Git Log Observer')
-
-    w = root.winfo_screenwidth() * 0.7
-    h = root.winfo_screenheight() * 0.5
-
-    # get screen width and height
-    # This may get too big on 4K later
-    ws = root.winfo_screenwidth()
-    hs = root.winfo_screenheight()
-
-    # calculate position to start from
-    x = (ws / 2) - (w / 2)
-    y = (hs / 2) - (h / 2)
-
-    # pass calculations to root in order to get right geometry and pos
-    root.geometry('%dx%d+%d+%d' % (w, h, x, y))
-    return root
-
-
 class GitObserverViewer:
     """
     TKinter based form to show a TreeView containing
     observations column wise
     """
-    def __init__(self, config):
+
+    def __init__(self, app_config):
+        self.config = app_config
         """"
         Instantiates a new instance and passes given
         config further down to GitObserver doing the observations
         """
         # Force use of descending log output
-        config.descending = True
+        self.config.descending = True
         # Instantiate GitObserver with received conf
-        self.observer = GitObserver(config)
-        self.args = config
-        self.root = create_form()
+        self.observer = GitObserver(self.config)
+
+        # Create root window
+        self.root = Tk()
+        # Open PhotoImage to be passed to created form
+        icon = PhotoImage(file="static/favicon.png")
+        self.root.iconphoto(True, icon)
+        self.root.title('Git Log Observer')
+        geo = TkUtils.calculate_form_geometry(self.root, 0.7, 0.5)
+        self.root.geometry(geo)
 
         self.view_frame = Frame(self.root)
         self.view_frame.pack(fill=BOTH, expand=True)
@@ -115,7 +66,7 @@ class GitObserverViewer:
         self.tv_commits = ttk.Treeview(self.view_frame, show="headings",
                                        yscrollcommand=self.view_scroll_y.set, xscrollcommand=self.view_scroll_x.set)
         # Bind cell click event to open_link
-        self.tv_commits.bind('<Button-1>', open_link)
+        self.tv_commits.bind('<Double-1>', self.open_link)
         self.tv_commits.pack(fill=X, expand=True)
         self.view_scroll_y.config(command=self.tv_commits.yview)
         self.view_scroll_x.config(command=self.tv_commits.xview)
@@ -167,8 +118,7 @@ class GitObserverViewer:
                 commit = folder.commits[row_idx]
                 value = f"{commit.author}: {commit.message} ({commit.date.strftime('%Y-%m-%d %H:%M:%S')})"
                 row_values.append(value)
-                link = f"{commit.link}"
-                row_values.append(link)
+                row_values.append(commit.sha1)
             self.tv_commits.insert(parent='', index='end', values=row_values)
 
         self.tv_commits.pack(fill=BOTH, expand=True)
@@ -203,6 +153,44 @@ class GitObserverViewer:
                 min_width = 75
             self.tv_commits.heading(col_idx, anchor="nw", text=column_names[col_idx])
             self.tv_commits.column(col_idx, anchor="nw", minwidth=min_width, stretch=True, width=min_width)
+
+    def open_link(self, event):
+        """
+        Event handler for TreeView purpose.
+        Will expect third and then every second column value to represent
+        a web link.
+        Does nothing when different column is hit or link is empty
+        :param event: Mouse click event
+        :return: None
+        """
+        # Get the associated TreeView widget
+        tree = event.widget
+        # Try to get region by mouse event args
+        region = tree.identify_region(event.x, event.y)
+        col = tree.identify_column(event.x)
+        iid = tree.identify('item', event.x, event.y)
+        col_num = int(col.split('#')[1])
+        # Return on Date click
+        if col_num == 0:
+            return
+
+        # Minus first column (last update), then every second col is a link col
+        if not region == 'cell':
+            return
+
+        if (col_num - 1) % 2 == 0:
+            # Extract link from clicked and found cell
+            sha1 = tree.item(iid)['values'][col_num - 1]
+            link = f"{self.config.origin}{sha1}"
+            if len(link) > 0:
+                # open the link in default browser
+                wb.open_new_tab(link)
+        else:
+            # Extract link from next cell of clicked cell
+            sha1 = tree.item(iid)['values'][col_num]
+            if len(sha1) > 0:
+                git_medium_info = self.observer.get_git_show(sha1)
+                TkUtils.show_dialog(self.root, git_medium_info)
 
     def run(self):
         """
