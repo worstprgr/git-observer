@@ -17,7 +17,7 @@ class Logger:
     Usage:
         import core.logger as logger
 
-        log = Logger(__name__).log_init
+        log = logger.Logger(__name__).log_init
 
         log.debug('Message')
         log.info('Message')
