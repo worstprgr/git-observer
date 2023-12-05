@@ -100,9 +100,9 @@ class TkUtils:
         x = (width_screen / 2) - (width / 2)
         y = (height_screen / 2) - (height / 2)
 
-        # TODO: currently not respecting roots screen, it reproducible opens on primary screen print(f"{
-        #  root.winfo_screen()}: {int(root.winfo_x())}x{int(root.winfo_y())}+{int(root.winfo_screenwidth ())}+{int(
-        #  root.winfo_screenheight())}")
+        # TODO: currently not respecting roots screen, it reproducible opens on primary screen
+        # print(f"{root.winfo_screen()}: {int(root.winfo_x())}x{int(root.winfo_y())}
+        # +{int(root.winfo_screenwidth ())}+{int(root.winfo_screenheight())}")
 
         # return calculations to root in order to get right geometry and pos
         return f"{int(width)}x{int(height)}+{int(x)}+{int(y)}"
@@ -130,7 +130,7 @@ class TkUtils:
         message.insert(index=1.0, chars=message_text)
         message.config(state=DISABLED, highlightthickness=0, borderwidth=0)
         message_root.pack(fill=BOTH, expand=True, padx=10, pady=5)
-        message.pack(anchor='nw', fill=BOTH)
+        message.pack(anchor='nw', expand=True, fill=BOTH)
 
         btn_close = Button(master=dialog, width=8, text='OK', command=dialog.destroy)
         btn_close.pack(anchor='s', padx=12, pady=5, fill=NONE)
