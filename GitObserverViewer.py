@@ -66,7 +66,7 @@ class GitObserverViewer:
         self.tv_commits = ttk.Treeview(self.view_frame, show="headings",
                                        yscrollcommand=self.view_scroll_y.set, xscrollcommand=self.view_scroll_x.set)
         # Bind cell click event to open_link
-        self.tv_commits.bind('<Double-1>', self.open_link)
+        self.tv_commits.bind('<Double-1>', self.cell_double_click)
         self.tv_commits.pack(fill=X, expand=True)
         self.view_scroll_y.config(command=self.tv_commits.yview)
         self.view_scroll_x.config(command=self.tv_commits.xview)
@@ -154,7 +154,7 @@ class GitObserverViewer:
             self.tv_commits.heading(col_idx, anchor="nw", text=column_names[col_idx])
             self.tv_commits.column(col_idx, anchor="nw", minwidth=min_width, stretch=True, width=min_width)
 
-    def open_link(self, event):
+    def cell_double_click(self, event):
         """
         Event handler for TreeView purpose.
         Will expect third and then every second column value to represent
@@ -171,7 +171,7 @@ class GitObserverViewer:
         iid = tree.identify('item', event.x, event.y)
         col_num = int(col.split('#')[1])
         # Return on Date click
-        if col_num == 0:
+        if col_num <= 1:
             return
 
         # Minus first column (last update), then every second col is a link col
