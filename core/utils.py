@@ -1,4 +1,6 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
+import pathlib
+import os
 
 
 class FileUtils:
@@ -23,3 +25,28 @@ class FileUtils:
             else:
                 raise UserWarning(f'Method: simple_fopen - Read Mode {read_mode} does not exist.')
         return file
+
+
+class PathUtils:
+    @staticmethod
+    def get_base_dir() -> str:
+        """
+        Finds the root folder of the project, using the `root.init` as an anchor.
+        :return: The root path, as a string.
+        """
+        root_init = "root.init"
+        max_search_depth = 5
+        current_dir = os.getcwd()
+
+        for x in range(max_search_depth):
+            if root_init in os.listdir(current_dir):
+                return current_dir
+            parent_dir = os.path.dirname(current_dir)
+            if parent_dir == current_dir:
+                break
+            current_dir = parent_dir
+        raise RuntimeError("Root directory not found within the specified search depth")
+
+    @staticmethod
+    def conv_to_path_object(fp: str) -> pathlib.Path:
+        return pathlib.Path(fp)
