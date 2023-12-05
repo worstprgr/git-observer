@@ -45,3 +45,50 @@ class Observation:
         """
         self.name = name
         self.commits = observation_commits
+
+
+class ObservationUtil:
+    @staticmethod
+    def is_empty(observations: list[Observation]):
+        """
+        Checks if given list of Observation is
+        either null or empty. Empty is defined by
+        all nested lists of Commit are empty as well
+        :param observations:
+        :return:
+        """
+        if observations is None or len(observations) == 0:
+            return True
+
+        for folder in observations:
+            if observations is None:
+                continue
+            if len(folder.commits) > 0:
+                return False
+        return True
+
+    @staticmethod
+    def parse_commit_formatted(commit_msg: str) -> Commit | None:
+        """
+        Parses one commit line given by git log
+        to transport data object Commit
+        :param commit_msg: one string that represents one commit in pre-defined format (see init)
+        :return: Newly created instance of Commit representing the commit
+        """
+        # TODO: would be cool to have the format more generic instead of this
+        # TODO: This would be cool to have as a static member of Commit. Like "Commit.parse"
+        if not commit_msg:
+            return
+
+        lineinfo = commit_msg.split('|')
+        if lineinfo is None or len(lineinfo) < 4:
+            raise ValueError('Expected format "author|date|message|SHA1|[branch]"')
+
+        author = lineinfo[0]
+        date = datetime.fromisoformat(lineinfo[1])
+        message = lineinfo[2]
+        commit_hash = lineinfo[3]
+        branch = ''
+        if lineinfo[4]:
+            branch = lineinfo[4]
+        return Commit(author, date, message, commit_hash, branch)

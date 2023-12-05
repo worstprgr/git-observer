@@ -7,25 +7,8 @@ from tkinter import Tk
 
 from GitObserver import GitObserver
 from core.transport import Observation
+from core.transport import ObservationUtil
 from core.utils import TkUtils
-
-
-def is_empty(observations: list[Observation]):
-    """
-    Checks if given list of Observation is
-    either null or empty. Empty is defined by
-    all nested lists of Commit are empty as well
-    :param observations:
-    :return:
-    """
-    if observations is None or len(observations) == 0:
-        return True
-    for folder in observations:
-        if observations is None:
-            continue
-        if len(folder.commits) > 0:
-            return False
-    return True
 
 
 class GitObserverViewer:
@@ -89,7 +72,7 @@ class GitObserverViewer:
         :param observations: New observation results that should be appended
         :return: None
         """
-        if is_empty(observations):
+        if ObservationUtil.is_empty(observations):
             # ToDo: may we extract STDOUT to a actual log file
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Nothing changed")
             return

@@ -30,26 +30,27 @@ class ConfigHandler:
     Helper class to handle configuration from several
     locations (arguments, file)
     """
+
+    config_names_ini_defaults: dict = {
+        'origin': 'https://github.com/worstprgr/git-observer/commit/',
+        'filepath': BASE_DIR,
+        'logfolders': ['.'],
+        'ignore': [],
+        'show_viewer': True,
+        'descending': True
+    }
+
+    config_name_defaults: dict = {
+        'origin': 'https://github.com/worstprgr/git-observer/commit/',
+        'filepath': BASE_DIR,
+        'logfolders': ['.'],
+        'ignore': [],
+        'show_viewer': False,
+        'descending': False
+    }
+
     def __init__(self):
         self.config_ini_file: str = 'conf.ini'
-
-        self.config_names_ini_defaults: dict = {
-            'origin': 'https://github.com/worstprgr/git-observer/commit/',
-            'filepath': BASE_DIR,
-            'logfolders': ['.'],
-            'ignore': [],
-            'show_viewer': True,
-            'descending': True
-        }
-
-        self.config_name_defaults: dict = {
-            'origin': 'https://github.com/worstprgr/git-observer/commit/',
-            'filepath': BASE_DIR,
-            'logfolders': ['.'],
-            'ignore': [],
-            'show_viewer': False,
-            'descending': False
-        }
 
     def config_exists(self):
         ini_file = Path(self.config_ini_file)

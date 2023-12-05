@@ -1,11 +1,11 @@
 #!/bin/env python
-from datetime import datetime
 import subprocess
 from argparse import Namespace
+from logging import INFO
 from typing import IO
 
 import core.paths as cpaths
-from core.transport import Commit
+from core.transport import Commit, ObservationUtil
 from core.transport import Observation
 from core.logger import Logger
 
@@ -15,7 +15,6 @@ class GitObserver:
     Controller to get access to git log messages including
     filtering for ignored authors and specific folders to observe
     """
-    known_hashes: list[str] = []
 
     def __init__(self, config: Namespace, is_test_instance: bool = False):
         """
@@ -27,6 +26,7 @@ class GitObserver:
         """
         self.logger = Logger(__name__).log_init
         self.is_test = is_test_instance
+        self.known_hashes: list[str] = []
 
         # May encapsulate config in exclusive var
         self.origin = config.origin
@@ -133,7 +133,7 @@ class GitObserver:
                 if not line:
                     break
                 commit_line = line.decode("utf-8").rstrip()[1:-1]
-                commit = self.parse_commit_formatted(commit_line)
+                commit = ObservationUtil.parse_commit_formatted(commit_line)
                 if commit:
                     git_log.append(commit)
         return git_log
@@ -151,27 +151,6 @@ class GitObserver:
             cmd = self.get_git_log_cmd(path)
             return subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout
         return open(self.gitlog_dummy_file, mode='rb', buffering=-1, errors=None, closefd=True)
-
-    @staticmethod
-    def parse_commit_formatted(commit_msg: str) -> Commit | None:
-        """
-        Parses one commit line given by git log
-        to transport data object Commit
-        :param commit_msg: one string that represents one commit in pre-defined format (see init)
-        :return: Newly created instance of Commit representing the commit
-        """
-        if not commit_msg:
-            return
-
-        lineinfo = commit_msg.split('|')
-        author = lineinfo[0]
-        date = datetime.fromisoformat(lineinfo[1])
-        message = lineinfo[2]
-        commit_hash = lineinfo[3]
-        branch = ''
-        if lineinfo[4]:
-            branch = lineinfo[4]
-        return Commit(author, date, message, commit_hash, branch)
 
     def handle_observed_path(self, path: str) -> list[Commit]:
         """
@@ -253,7 +232,7 @@ class GitObserver:
         Logs on INFO respecting the is_test flag where logging
         produces nasty and useless output
         :param message: message to log
-        :return:
+        :return: None
         """
         if not self.is_test:
-            self.log_info(message)
+            self.logger.log(INFO, message)
