@@ -14,4 +14,5 @@ LOG_DIR: str = BASE_DIR + '/logs'
 
 # Files
 GITLOG_DUMMY: str = STATIC_DIR + '/gitlog-dummy.txt'
+GITLOG_DUMMY_REDUNDANT: str = STATIC_DIR + '/gitlog-dummy-redundant.txt'
 LOG_FILE = lambda a: LOG_DIR + f'/log_{a}.log'
