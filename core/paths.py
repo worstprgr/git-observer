@@ -1,16 +1,17 @@
 #!/usr/bin/env python
-"""
-Note on `pathlib.Path().resolve()` - it gets the current working directory,
-but it depends on where the file got executed. So if you call this file
-from one directory above, it shows you the (same) directory above.
-"""
-import pathlib
+import core.utils
+
+
+# Init
+path_utils = core.utils.PathUtils()
 
 
 # Folders
-BASE_DIR: str = str(pathlib.Path().resolve())
+BASE_DIR: str = path_utils.get_base_dir()
 CORE_DIR: str = BASE_DIR + '/core'
 STATIC_DIR: str = BASE_DIR + '/static'
+LOG_DIR: str = BASE_DIR + '/logs'
 
 # Files
 GITLOG_DUMMY: str = STATIC_DIR + '/gitlog-dummy.txt'
+LOG_FILE = lambda a: LOG_DIR + f'/log_{a}.log'
