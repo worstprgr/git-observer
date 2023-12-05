@@ -1,16 +1,13 @@
 #!/bin/env python
-import datetime
+from datetime import datetime
 import subprocess
+from argparse import Namespace
 from typing import IO
 
 import core.paths as cpaths
-import core.utils as cutils
 from core.transport import Commit
 from core.transport import Observation
 from core.logger import Logger
-
-# Init utils
-FileUtils = cutils.FileUtils()
 
 
 class GitObserver:
@@ -20,7 +17,7 @@ class GitObserver:
     """
     known_hashes: list[str] = []
 
-    def __init__(self, config, is_test_instance: bool = False):
+    def __init__(self, config: Namespace, is_test_instance: bool = False):
         """
         Initializes a new instance of GitObserver controller class
         according to given configuration. May be started in testing mode by passing
@@ -30,8 +27,6 @@ class GitObserver:
         """
         self.logger = Logger(__name__).log_init
         self.is_test = is_test_instance
-        if is_test_instance:
-            self.logger.info("Initialized for testing")
 
         # May encapsulate config in exclusive var
         self.origin = config.origin
@@ -57,13 +52,16 @@ class GitObserver:
         Logs the given configuration to current instance log
         :return: None
         """
-        self.logger.info(f'Origin: "{self.origin}"')
-        self.logger.info(f'Git root: "{self.filepath}"')
-        self.logger.info(f'Descending: {self.descending}')
+        # Only log when its not a test
+        if self.is_test:
+            return
+        self.log_info(f'Origin: "{self.origin}"')
+        self.log_info(f'Git root: "{self.filepath}"')
+        self.log_info(f'Descending: {self.descending}')
         if self.logfolders and len(self.logfolders) > 0:
-            self.logger.info(f'Observed folders: {str.join(", ", self.logfolders)}')
+            self.log_info(f'Observed folders: {str.join(", ", self.logfolders)}')
         if self.ignore and len(self.ignore) > 0:
-            self.logger.info(f'Ignored authors: {str.join(", ", self.ignore)}')
+            self.log_info(f'Ignored authors: {str.join(", ", self.ignore)}')
 
     def get_git_log_cmd(self, path: str) -> list[str]:
         """
@@ -167,12 +165,12 @@ class GitObserver:
 
         lineinfo = commit_msg.split('|')
         author = lineinfo[0]
-        date = datetime.datetime.fromisoformat(lineinfo[1])
+        date = datetime.fromisoformat(lineinfo[1])
         message = lineinfo[2]
         commit_hash = lineinfo[3]
         branch = ''
         if lineinfo[4]:
-            branch = lineinfo[4] + "\n"
+            branch = lineinfo[4]
         return Commit(author, date, message, commit_hash, branch)
 
     def handle_observed_path(self, path: str) -> list[Commit]:
@@ -187,11 +185,12 @@ class GitObserver:
         if len(messages) == 0:
             return []
 
-        self.logger.info("Found actual changes, will present now")
-        for cmt in messages:
-            print(f"{cmt.author} ({cmt.date}): {cmt.message}\n" +
-                  f"{cmt.branch}" +
-                  f"{self.origin}{cmt.sha1}\n")
+        self.log_info("Found actual changes, will present now")
+        if not self.is_test:
+            for cmt in messages:
+                print(f"{cmt.author} ({cmt.date}): {cmt.message}\n" +
+                      f"{cmt.branch}\n" +
+                      f"{self.origin}{cmt.sha1}\n")
         return messages
 
     def filter_commit_result(self, commits: list[Commit]) -> list[Commit]:
@@ -243,7 +242,18 @@ class GitObserver:
         :param sha1: SHA1
         :return: git show result
         """
+        # TODO: check if this really needs a testing since its basic read from stdout
         git_show_cmd = self.get_git_show_cmd(sha1)
         # Should be a utility for external calls instead of redundant
         response = subprocess.run(git_show_cmd, stdout=subprocess.PIPE)
         return response.stdout.decode("utf-8")
+
+    def log_info(self, message: str):
+        """
+        Logs on INFO respecting the is_test flag where logging
+        produces nasty and useless output
+        :param message: message to log
+        :return:
+        """
+        if not self.is_test:
+            self.log_info(message)
