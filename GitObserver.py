@@ -15,7 +15,6 @@ class GitObserver:
     Controller to get access to git log messages including
     filtering for ignored authors and specific folders to observe
     """
-    known_hashes: list[str] = []
 
     def __init__(self, config: Namespace, is_test_instance: bool = False):
         """
@@ -27,6 +26,7 @@ class GitObserver:
         """
         self.logger = Logger(__name__).log_init
         self.is_test = is_test_instance
+        self.known_hashes: list[str] = []
 
         # May encapsulate config in exclusive var
         self.origin = config.origin
