@@ -6,9 +6,9 @@ from tkinter import Scrollbar
 from tkinter import Tk
 
 from GitObserver import GitObserver
+from core.tkinter.TkUtil import TkUtil
 from core.transport import Observation
 from core.transport import ObservationUtil
-from core.utils import TkUtils
 
 
 class GitObserverViewer:
@@ -34,7 +34,7 @@ class GitObserverViewer:
         icon = PhotoImage(file="static/favicon.png")
         self.root.iconphoto(True, icon)
         self.root.title('Git Log Observer')
-        geo = TkUtils.calculate_form_geometry(self.root, 0.7, 0.5)
+        geo = TkUtil.calculate_form_geometry(self.root, 0.7, 0.5)
         self.root.geometry(geo)
 
         self.view_frame = Frame(self.root)
@@ -173,7 +173,7 @@ class GitObserverViewer:
             sha1 = tree.item(iid)['values'][col_num]
             if len(sha1) > 0:
                 git_medium_info = self.observer.get_git_show(sha1)
-                TkUtils.show_dialog(self.root, git_medium_info)
+                TkUtil.show_message_dialog(self.root, git_medium_info)
 
     def run(self):
         """
