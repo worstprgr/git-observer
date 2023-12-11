@@ -1,9 +1,10 @@
 import webbrowser as wb
 from datetime import datetime
-from tkinter import BOTH, BOTTOM, RIGHT, X, Y, ttk, PhotoImage
+from tkinter import BOTH, BOTTOM, RIGHT, X, Y, ttk, PhotoImage, LEFT
 from tkinter import Frame
 from tkinter import Scrollbar
 from tkinter import Tk
+from tkinter.ttk import Sizegrip
 
 from GitObserver import GitObserver
 from core.tkinter.TkUtil import TkUtil
@@ -41,10 +42,17 @@ class GitObserverViewer:
         self.view_frame.pack(fill=BOTH, expand=True)
 
         # scrollbar
+        # H-Scroll container since contains a scroll bar and a sizegrip
+        self.h_scroll_stack = Frame(self.view_frame)
+        self.sizegrip = Sizegrip(self.h_scroll_stack)
+        self.sizegrip.pack(side=RIGHT)
+
+        self.view_scroll_x = Scrollbar(self.h_scroll_stack, orient='horizontal')
+        self.view_scroll_x.pack(side=LEFT, fill=X, expand=True)
+        self.h_scroll_stack.pack(side=BOTTOM, fill=X)
+
         self.view_scroll_y = Scrollbar(self.view_frame, orient='vertical')
         self.view_scroll_y.pack(side=RIGHT, fill=Y)
-        self.view_scroll_x = Scrollbar(self.view_frame, orient='horizontal')
-        self.view_scroll_x.pack(side=BOTTOM, fill=X)
 
         self.tv_commits = ttk.Treeview(self.view_frame, show="headings",
                                        yscrollcommand=self.view_scroll_y.set, xscrollcommand=self.view_scroll_x.set)
@@ -53,6 +61,7 @@ class GitObserverViewer:
         self.tv_commits.pack(fill=X, expand=True)
         self.view_scroll_y.config(command=self.tv_commits.yview)
         self.view_scroll_x.config(command=self.tv_commits.xview)
+        self.create_columns(app_config.logfolders)
 
     def update_observation(self):
         """
@@ -77,8 +86,6 @@ class GitObserverViewer:
             print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Nothing changed")
             return
 
-        self.create_columns(observations)
-
         # add data
         row_count = 0
         for folder in observations:
@@ -88,7 +95,7 @@ class GitObserverViewer:
 
         for row_idx in range(0, row_count):
             row_values = []
-            if row_idx == 0:
+            if row_idx == (row_count - 1):
                 row_values.append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             else:
                 row_values.append('')
@@ -102,11 +109,12 @@ class GitObserverViewer:
                 value = f"{commit.author}: {commit.message} ({commit.date.strftime('%Y-%m-%d %H:%M:%S')})"
                 row_values.append(value)
                 row_values.append(commit.sha1)
-            self.tv_commits.insert(parent='', index='end', values=row_values)
+            self.tv_commits.insert(parent='', index=0, values=row_values)
 
+        self.tv_commits.pack_forget()
         self.tv_commits.pack(fill=BOTH, expand=True)
 
-    def create_columns(self, observations: list[Observation]):
+    def create_columns(self, observations: list[str]):
         """
         Initially creates columns based on first found
         Observation list.
@@ -119,7 +127,7 @@ class GitObserverViewer:
 
         column_names = ['Last updated']
         for folder in observations:
-            column_names.append(f'{folder.name}')
+            column_names.append(f'{folder}')
             column_names.append('Link')
 
         # define our column
@@ -170,7 +178,7 @@ class GitObserverViewer:
                 wb.open_new_tab(link)
         else:
             # Extract link from next cell of clicked cell
-            sha1 = tree.item(iid)['values'][col_num]
+            sha1 = str(tree.item(iid)['values'][col_num])
             if len(sha1) > 0:
                 git_medium_info = self.observer.get_git_show(sha1)
                 TkUtil.show_message_dialog(self.root, git_medium_info)
