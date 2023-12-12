@@ -47,7 +47,6 @@ class TestFileUtils(unittest.TestCase):
 
 class TestPathUtils(unittest.TestCase):
     def test_get_base_dir(self):
-        # TODO: Fix a bug in the get_base_dir method (Issue ID Missing) -> ask Daniel
         # Init
         # Given
         # When
