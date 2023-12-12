@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from argparse import Namespace
 from pathlib import Path
 
-from core.paths import BASE_DIR
+import core.paths as c_paths
 from configparser import ConfigParser
 
 
@@ -33,7 +33,7 @@ class ConfigHandler:
 
     config_names_ini_defaults: dict = {
         'origin': 'https://github.com/worstprgr/git-observer/commit/',
-        'filepath': BASE_DIR,
+        'filepath': c_paths.BASE_DIR,
         'logfolders': ['.'],
         'ignore': [],
         'show_viewer': True,
@@ -42,7 +42,7 @@ class ConfigHandler:
 
     config_name_defaults: dict = {
         'origin': 'https://github.com/worstprgr/git-observer/commit/',
-        'filepath': BASE_DIR,
+        'filepath': c_paths.BASE_DIR,
         'logfolders': ['.'],
         'ignore': [],
         'show_viewer': False,
@@ -50,7 +50,7 @@ class ConfigHandler:
     }
 
     def __init__(self):
-        self.config_ini_file: str = 'conf.ini'
+        self.config_ini_file: str = c_paths.CONFIG_INI
 
     def config_exists(self):
         ini_file = Path(self.config_ini_file)
@@ -59,7 +59,7 @@ class ConfigHandler:
     def install(self):
         """
         If not present, the default configuration is
-        stored in local conig.ini file
+        stored in local config.ini file
         :return:
         """
         if self.config_exists():
@@ -77,6 +77,8 @@ class ConfigHandler:
         with open(self.config_ini_file, 'w') as ini:
             config.write(ini)
 
+    # TODO @worstprgr: Separate the parser from the config builder logic, so we can test the argparse directly.
+    #       Like in: https://stackoverflow.com/a/18161115/14659310
     def parse_arguments(self) -> Namespace:
         """
         Parses the given arguments passed by caller and
@@ -87,7 +89,7 @@ class ConfigHandler:
         parser.add_argument('-o', '--origin', metavar='origin',
                             default='https://github.com/worstprgr/git-observer/commit/',  # Default to repo at GitHub
                             help='Origin path to build commit link for output', required=False)
-        parser.add_argument('-fp', '--filepath', action='store', default=BASE_DIR,
+        parser.add_argument('-fp', '--filepath', action='store', default=c_paths.BASE_DIR,
                             help='Git root to be observed', required=False)
         parser.add_argument('-lf', '--logfolders', metavar='Folder', type=str, nargs='+',
                             default='.', help='Folder(s) to be observed', required=False)
