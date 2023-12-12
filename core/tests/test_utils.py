@@ -2,10 +2,9 @@ import pathlib
 import unittest
 
 import core.unittestutils
-import core.utils
+from core.utils import TypeUtil
 import core.paths as c_paths
-import core.tests.utils_factory
-
+import core.tests.factory
 
 ut_utils = core.unittestutils.UTUtils()
 
@@ -22,7 +21,7 @@ class TestFileUtils(unittest.TestCase):
         # Init
         dummy_file = c_paths.BUNNY_FILE
         file_utils = core.utils.FileUtils()
-        utils_fact = core.tests.utils_factory.UtilsFactory()
+        utils_fact = core.tests.factory.UtilsFactory()
 
         # Given
         utils_fact.create_bunny_file(dummy_file)
@@ -68,6 +67,37 @@ class TestPathUtils(unittest.TestCase):
 
         # Then
         self.assertTrue(isinstance(path_like_obj, (pathlib.Path, type(pathlib.Path()))))
+
+
+class TestTypeUtil(unittest.TestCase):
+
+    def test_parse_value(self):
+        """
+        Tests if a string value got converted correctly, to a specific type.\n
+        - String with commas -> converts into a stripped list
+        - Non-empty string -> converts into a positive boolean
+        - Digit as string -> converts into the corresponding integer
+        - Dummy Dict -> tests, if no conversion happened
+        """
+
+        # Given
+        test_list = ' Hallo ,Hello, Hi, Yo', []
+        test_boolean = 'Test', True
+        test_int = '10', 1
+        test_other_type = 2, {}
+
+        # When
+        convert_str_to_list = TypeUtil.parse_value(test_list[0], test_list[1])
+        convert_str_to_bool = TypeUtil.parse_value(test_boolean[0], test_boolean[1])
+        convert_str_to_int = TypeUtil.parse_value(test_int[0], test_int[1])
+        # Unclear why this even works; expected is str, but we enter with int
+        no_conversion = TypeUtil.parse_value(test_other_type[0], test_other_type[1])
+
+        # Then
+        self.assertEqual(['Hallo', 'Hello', 'Hi', 'Yo'], convert_str_to_list)
+        self.assertEqual(True, convert_str_to_bool)
+        self.assertEqual(10, convert_str_to_int)
+        self.assertEqual(2, no_conversion)
 
 
 if __name__ == '__main__':

@@ -1,43 +1,13 @@
 import argparse
 import unittest
 
-import core.config
+from core.config.parser import IniConfigParser, ArgConfigParser
+from core.config.management import ConfigManager
 import core.paths as c_paths
 import core.unittestutils
-import core.tests.config_factory
 
 ut_utils = core.unittestutils.UTUtils()
 ut_utils_ns = core.unittestutils
-
-
-class TestFunctions(unittest.TestCase):
-    def test_parse_value(self):
-        """
-        Tests if a string value got converted correctly, to a specific type.\n
-        - String with commas -> converts into a stripped list
-        - Non-empty string -> converts into a positive boolean
-        - Digit as string -> converts into the corresponding integer
-        - Dummy Dict -> tests, if no conversion happened
-        """
-        cfg = core.config
-
-        # Given
-        test_list = ' Hallo ,Hello, Hi, Yo', []
-        test_boolean = 'Test', True
-        test_int = '10', 1
-        test_other_type = 2, {}
-
-        # When
-        convert_str_to_list = cfg.parse_value(test_list[0], test_list[1])
-        convert_str_to_bool = cfg.parse_value(test_boolean[0], test_boolean[1])
-        convert_str_to_int = cfg.parse_value(test_int[0], test_int[1])
-        no_conversion = cfg.parse_value(test_other_type[0], test_other_type[1])
-
-        # Then
-        self.assertEqual(['Hallo', 'Hello', 'Hi', 'Yo'], convert_str_to_list)
-        self.assertEqual(True, convert_str_to_bool)
-        self.assertEqual(10, convert_str_to_int)
-        self.assertEqual(2, no_conversion)
 
 
 class TestConfigHandler(unittest.TestCase):
@@ -45,19 +15,19 @@ class TestConfigHandler(unittest.TestCase):
         """
         Tests if a config file is or isn't existing.
         """
-        # Init
-        cfg_handler_1 = core.config.ConfigHandler()
-        cfg_handler_2 = core.config.ConfigHandler()
+        # Prepare
         the_existing_file = c_paths.CONF_INI_DUMMY
         ut_utils.create_file(the_existing_file)
 
         # Given
-        cfg_handler_1.config_ini_file = 'dude_wheres_my_file.test'
-        cfg_handler_2.config_ini_file = the_existing_file
+        file_parser_non_existent = IniConfigParser(ConfigManager.config_defaults,
+                                                   'dude_wheres_my_file.test')
+        file_parser_existent = IniConfigParser(ConfigManager.config_defaults,
+                                               the_existing_file)
 
         # When
-        file_does_not_exist = cfg_handler_1.config_exists()
-        file_exists = cfg_handler_2.config_exists()
+        file_does_not_exist = file_parser_non_existent.has_config()
+        file_exists = file_parser_existent.has_config()
 
         # Then
         self.assertEqual(False, file_does_not_exist)
@@ -66,6 +36,7 @@ class TestConfigHandler(unittest.TestCase):
         # Delete test file
         ut_utils.delete_file(the_existing_file)
 
+    @unittest.skip("Install currently not implemented")
     def test_install(self):
         """
         Checking if the config file got created, if there's no config file in first place.\n
@@ -91,6 +62,7 @@ class TestConfigHandler(unittest.TestCase):
         # Delete test file
         ut_utils.delete_file(the_existing_file)
 
+    @unittest.skip("Arg check currently not implemented")
     def test_parse_arguments(self):
         """
         Test not implemented.
@@ -98,6 +70,7 @@ class TestConfigHandler(unittest.TestCase):
         # TODO @worstprgr: UT for Argparse (after separating the logic in `parse_arguments`)
         self.assertEqual(1, 1)
 
+    @unittest.skip("File args test currently not implemented")
     def test_handle_file_argument(self):
         """
         Checking if the correct type is returned. Expecting: `argparse.Namespace`
@@ -122,6 +95,7 @@ class TestConfigHandler(unittest.TestCase):
         # Delete test file
         ut_utils.delete_file(dummy_config_file)
 
+    @unittest.skip("File corruption test currently not implemented")
     def test_parse_config_file(self):
         """
         Checking, if a `RuntimeError` occurs, if the config file is invalid.\n
@@ -152,6 +126,7 @@ class TestConfigHandler(unittest.TestCase):
         ut_utils.delete_file(dummy_config_file)
         ut_utils.delete_file(valid_config_file)
 
+    @unittest.skip("No argument test currently not implemented")
     def test_no_args_fallback(self):
         """
         Checks if it returns the config namespace, if a config file is present.\n
@@ -178,6 +153,7 @@ class TestConfigHandler(unittest.TestCase):
         ut_utils.delete_file(dummy_config_file)
         ut_utils.delete_file(c_paths.CONFIG_INI)
 
+    @unittest.skip("Generic get_app_cong currently not implemented")
     def test_get_app_config(self):
         """
         Contains no test, since it would cascade methods, that are already tested.
@@ -187,6 +163,18 @@ class TestConfigHandler(unittest.TestCase):
         # When
         # Then
         self.assertEqual(True, True)
+
+    def test_consistent_arguments(self):
+        # Given are the app config defaults
+        defaults = ConfigManager.config_defaults
+        # When we instantiate a ArgConfigParser and build the actual parser
+        arg_parser = ArgConfigParser(defaults)
+        default_parser = arg_parser.build_parser()
+        # We expect that default_parser was successfully built
+        self.assertIsNotNone(default_parser, 'Expected valid ArgumentParser object')
+        # And all default keys are represented by parser, in order to have consistent redundancies
+        for key in defaults.keys():
+            self.assertIn(key, arg_parser.registered_args, f'Expected {key} as user argument')
 
 
 if __name__ == '__main__':

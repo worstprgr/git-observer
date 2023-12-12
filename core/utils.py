@@ -50,3 +50,26 @@ class PathUtils:
     @staticmethod
     def conv_to_path_object(fp: str) -> pathlib.Path:
         return pathlib.Path(fp)
+
+
+class TypeUtil:
+    """
+    Utilities to handle several types
+    """
+
+    @staticmethod
+    def parse_value(value: str, default_val):
+        """
+        Basically a string parser converting a string value
+        to list, bool, int or string
+        :param value: Input value that needs to be converted to Type of default_val
+        :param default_val: default_val as template fpr output value
+        :return: Any
+        """
+        if type(default_val) is list:
+            return [item.strip() for item in value.split(',')]
+        if type(default_val) is bool:
+            return bool(value)
+        if type(default_val) is int:
+            return int(value)
+        return value

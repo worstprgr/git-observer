@@ -2,11 +2,11 @@ import unittest
 
 import core.unittestutils
 import core.logger
-import core.tests.logger_factory
+import core.tests.factory
 
 
 ut_utils = core.unittestutils.UTUtils()
-logger_fact = core.tests.logger_factory.LoggerFactory()
+logger_fact = core.tests.factory.LoggerFactory()
 
 
 class TestLogger(unittest.TestCase):

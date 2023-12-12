@@ -2,8 +2,8 @@ import unittest
 
 from GitObserver import GitObserver
 from core.paths import GITLOG_DUMMY, GITLOG_DUMMY_REDUNDANT
-from core.tests.GitObserver_factory import GitObserverFactory
-from core.tests.config_factory import ConfigFactory
+from core.tests.factory import GitObserverFactory
+from core.config.management import ConfigManager
 
 """
 This module tests functionality of GitObserver.
@@ -21,7 +21,7 @@ class GitObserverTest(unittest.TestCase):
         :return: None
         """
         # Given is the default configuration provided by ObserverFactory
-        default_config = ConfigFactory.create_defaults()
+        default_config = ConfigManager.get_defaults()
         # Based on this a target test instance of GitObserver
         observer = GitObserver(default_config, is_test_instance=True)
 
@@ -102,7 +102,7 @@ class GitObserverTest(unittest.TestCase):
         # Given is a name we want to ignore in result
         ignore_name = 'otto.mustermann'
         # Given is the default configuration provided by ConfigFactory
-        config = ConfigFactory.create_defaults()
+        config = ConfigManager.get_defaults()
         # Modified to ignore otto.mustermann
         config.ignore = [ignore_name]
         # Based on this a target test instance of GitObserver
@@ -177,7 +177,7 @@ class GitObserverLogCommandTest(unittest.TestCase):
         :return: None
         """
         # Given is the default configuration provided by ConfigFactory
-        config = ConfigFactory.create_defaults()
+        config = ConfigManager.get_defaults()
         # Manipulated to sort descending
         config.descending = True
         # Given is also target test instance of GitObserver
@@ -198,7 +198,7 @@ class GitObserverLogCommandTest(unittest.TestCase):
         :return: None
         """
         # Given is the default configuration provided by ConfigFactory
-        config = ConfigFactory.create_defaults()
+        config = ConfigManager.get_defaults()
         # Manipulated to sort ascending
         config.descending = False
         # Given is also target test instance of GitObserver
