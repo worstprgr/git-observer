@@ -1,10 +1,10 @@
 #!/bin/env python
-from GitObserver import GitObserver
-from GitObserverViewer import GitObserverViewer
 import datetime
 import time
 from argparse import Namespace
 
+from GitObserver import GitObserver
+from GitObserverViewer import GitObserverViewer
 from core.config import ConfigHandler
 
 
@@ -15,6 +15,7 @@ def call_commandline(config: Namespace):
     :param config: configuration of command line tool
     :return: None
     """
+    # TODO: Replace this line with the logger
     print(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')} Starting git log observer...")
     observer = GitObserver(config)
     while 1:
