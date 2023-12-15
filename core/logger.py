@@ -58,11 +58,12 @@ class Logger:
         self.log_init = logging.getLogger(current_file)
 
     @staticmethod
-    def if_log_exists_today(fp: pathlib.Path) -> None or int:
+    def if_log_exists_today(fp: pathlib.Path) -> bool:
         file_exists: bool = os.path.exists(fp)
         if not file_exists:
             fp.touch()
-        return 0
+            return False
+        return True
 
     @staticmethod
     def close_logger() -> None:
