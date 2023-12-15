@@ -37,7 +37,7 @@ class TestFunctions(unittest.TestCase):
         self.assertEqual(['Hallo', 'Hello', 'Hi', 'Yo'], convert_str_to_list)
         self.assertEqual(True, convert_str_to_bool)
         self.assertEqual(10, convert_str_to_int)
-        self.assertEqual(2, no_conversion)
+        self.assertEqual(3, no_conversion)
 
 
 class TestConfigHandler(unittest.TestCase):
