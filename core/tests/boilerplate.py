@@ -55,7 +55,7 @@ class MyTestCase(unittest.TestCase):
         # Given
         test_var1 = 5
         test_var2 = 10
-        expected_result = 16  # Wrong on purpose
+        expected_result = 15
 
         # When
         scenario1 = addition(test_var1, test_var2)
