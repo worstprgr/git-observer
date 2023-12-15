@@ -1,1 +1,1 @@
-python run_tests.py
+python -m pytest
