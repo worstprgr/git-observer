@@ -58,8 +58,18 @@ class Logger:
         self.log_init = logging.getLogger(current_file)
 
     @staticmethod
-    def if_log_exists_today(fp: pathlib.Path):
+    def if_log_exists_today(fp: pathlib.Path) -> None or int:
         file_exists: bool = os.path.exists(fp)
         if not file_exists:
             fp.touch()
         return 0
+
+    @staticmethod
+    def close_logger() -> None:
+        """
+        Looks after an instance from `logging.FileHandler` and closes it.
+        """
+        file_handler = next(
+            (handler for handler in logging.getLogger().handlers if isinstance(handler, logging.FileHandler)), None)
+        if file_handler:
+            file_handler.close()
