@@ -67,7 +67,7 @@ class TestPathUtils(unittest.TestCase):
         path_like_obj = path_utils.conv_to_path_object(test_path)
 
         # Then
-        self.assertEqual(pathlib.WindowsPath or pathlib.PosixPath, type(path_like_obj))
+        self.assertTrue(isinstance(path_like_obj, (pathlib.Path, type(pathlib.Path()))))
 
 
 if __name__ == '__main__':
