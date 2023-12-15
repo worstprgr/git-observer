@@ -1,5 +1,6 @@
 # Folders
 /venv/
+/venv_311/
 /.idea/
 /__pycache__/
 /.vscode/
