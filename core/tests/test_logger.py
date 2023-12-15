@@ -1,11 +1,13 @@
+import time
 import unittest
 
 import core.unittestutils
 import core.logger
-# import core.paths as c_paths
+import core.tests.logger_factory
 
 
 ut_utils = core.unittestutils.UTUtils()
+logger_fact = core.tests.logger_factory.LoggerFactory()
 
 
 class TestLogger(unittest.TestCase):
@@ -14,26 +16,24 @@ class TestLogger(unittest.TestCase):
         Checking if the log file gets created, when it's missing.\n
         Checking if the method returns `0`, if the log file exists.
         """
-        # TODO @worstprgr: Fix issue #50, before uncommenting this test
-        # # Init
-        # log = core.logger.Logger(__name__)
-        #
-        # # Given
-        # dummy_log = ut_utils.lazy_path_obj(c_paths.LOG_FILE_DUMMY)
-        #
-        # # When
-        # # Explanation: The first line creates the log file.
-        # # The second line checks, if the log file was created. If not, the assertion will fail.
-        # log.if_log_exists_today(dummy_log)
-        # log_file_existing = log.if_log_exists_today(dummy_log)
-        #
-        # # Then
-        # self.assertEqual(0, log_file_existing, 'Log file was not created')
-        #
-        # # Delete dummy file
-        # ut_utils.delete_file(dummy_log)
+        # Init
+        log = core.logger.Logger(__name__)
 
-        self.assertEqual(True, True)
+        # Given
+        log_file = logger_fact.create_log_file_path()
+
+        # When
+        # Explanation: The first line creates the log file.
+        # The second line checks, if the log file was created. If not, the assertion will fail.
+        log.if_log_exists_today(log_file)
+        log_file_existing = log.if_log_exists_today(log_file)
+
+        # Then
+        self.assertEqual(0, log_file_existing, 'Log file was not created')
+
+        # Delete dummy file
+        log.close_logger()
+        ut_utils.delete_file(log_file)
 
 
 if __name__ == '__main__':
