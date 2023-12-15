@@ -13,7 +13,7 @@ class TestLogger(unittest.TestCase):
     def test_if_log_exists_today(self):
         """
         Checking if the log file gets created, when it's missing.\n
-        Checking if the method returns `0`, if the log file exists.
+        Checking if the method returns `True`, if the log file exists.
         """
         # Init
         log = core.logger.Logger(__name__)
@@ -22,13 +22,12 @@ class TestLogger(unittest.TestCase):
         log_file = logger_fact.create_log_file_path()
 
         # When
-        # Explanation: The first line creates the log file.
-        # The second line checks, if the log file was created. If not, the assertion will fail.
-        log.if_log_exists_today(log_file)
-        log_file_existing = log.if_log_exists_today(log_file)
+        # Explanation: The logfile was created by the first instance of `Logger()`
+        # The following line checks, if the log file was created. If not, the assertion will fail.
+        log_file_exists = log.if_log_exists_today(log_file)
 
         # Then
-        self.assertEqual(0, log_file_existing, 'Log file was not created')
+        self.assertEqual(True, log_file_exists, 'Log file not found')
 
         # Delete dummy file
         log.close_logger()
