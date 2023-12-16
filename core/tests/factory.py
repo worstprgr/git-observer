@@ -1,7 +1,7 @@
 import pathlib
 from datetime import datetime
 
-from GitObserver import GitObserver
+from observer import GitObserver
 from core.config.management import ConfigManager
 import core.paths
 import core.unittestutils

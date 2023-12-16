@@ -1,26 +1,38 @@
 #!/bin/env python
 import datetime
-import time
 from argparse import Namespace
 
-from GitObserver import GitObserver
-from GitObserverViewer import GitObserverViewer
 from core.config.management import ConfigManager
+from core.transport import ObservationEventArgs
+from observer import GitObserverThread
+from viewer import GitObserverViewer
 
 
-def call_commandline(config: Namespace):
+def observer_loaded(e: ObservationEventArgs) -> None:
+    """
+    Event handler that handles newly loaded observations by
+    presenting them to the shell
+    :return: None
+    """
+    for observation in e.observations:
+        print(f"#### Observation {observation.name} ({e.update_time}) ####")
+        for cmt in observation.commits:
+            print(f"{cmt.author} ({cmt.date}): {cmt.message}\n" +
+                  f"{cmt.branch}\n" +
+                  f"{cmt.origin}{cmt.sha1}\n")
+
+
+def call_shell(config: Namespace) -> None:
     """
     Calls the command line tool GitObserver using
     passed config in an endless loop paused for 60s per run
     :param config: configuration of command line tool
     :return: None
     """
-    # TODO: Replace this line with the logger
-    print(f"{datetime.datetime.now().strftime('%Y-%m-%d %H:%M')} Starting git log observer...")
-    observer = GitObserver(config)
-    while 1:
-        observer.run()
-        time.sleep(60)
+    observer = GitObserverThread(config)
+    observer.OnLoaded += observer_loaded
+    observer.start()
+    print(f'{datetime.datetime.now()}: GitObserver for shell started')
 
 
 if __name__ == '__main__':
@@ -28,4 +40,4 @@ if __name__ == '__main__':
     if app_config.show_viewer:
         GitObserverViewer(app_config).run()
     else:
-        call_commandline(app_config)
+        call_shell(app_config)
