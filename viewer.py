@@ -6,9 +6,9 @@ from tkinter import Scrollbar
 from tkinter import Tk
 from tkinter.ttk import Sizegrip
 
-from GitObserver import GitObserver
+from observer import GitObserverThread
 from core.tkinter.TkUtil import TkUtil
-from core.transport import Observation
+from core.transport import Observation, ObservationEventArgs
 from core.transport import ObservationUtil
 
 
@@ -27,10 +27,16 @@ class GitObserverViewer:
         # Force use of descending log output
         self.config.descending = True
         # Instantiate GitObserver with received conf
-        self.observer = GitObserver(self.config)
+        self.observer = GitObserverThread(self.config)
+        self.observer.OnLoaded += self.observer_loaded
+        self.observer.start()
 
         # Create root window
         self.root = Tk()
+
+        # Get notified when closed
+        self.root.protocol("WM_DELETE_WINDOW", self.root_delete)
+
         # Open PhotoImage to be passed to created form
         icon = PhotoImage(file="static/favicon.png")
         self.root.iconphoto(True, icon)
@@ -63,15 +69,25 @@ class GitObserverViewer:
         self.view_scroll_x.config(command=self.tv_commits.xview)
         self.create_columns(app_config.logfolders)
 
-    def update_observation(self):
+    def root_delete(self):
         """
-        Update routine to trigger observation and
-        bring results to the end of shown table
+        Handler which is called when window is about to get deleted
+        (Shutdown)
         :return: None
         """
-        observations = self.observer.run()
-        self.update_view(observations)
-        self.root.after(60 * 1000, self.update_observation)
+        # Notify observer thread that its about to die
+        self.observer.run_thread = False
+        self.root.destroy()
+
+    def observer_loaded(self, e: ObservationEventArgs):
+        """
+        Event handler that reacts on external event
+        of successfully loaded observations
+        :return: None
+        """
+        if e is None:
+            return
+        self.update_view(e.observations)
 
     def update_view(self, observations: list[Observation]):
         """
@@ -82,8 +98,6 @@ class GitObserverViewer:
         :return: None
         """
         if ObservationUtil.is_empty(observations):
-            # ToDo: may we extract STDOUT to a actual log file
-            print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Nothing changed")
             return
 
         # add data
@@ -144,6 +158,7 @@ class GitObserverViewer:
                 min_width = 75
             self.tv_commits.heading(col_idx, anchor="nw", text=column_names[col_idx])
             self.tv_commits.column(col_idx, anchor="nw", minwidth=min_width, stretch=True, width=min_width)
+        self.tv_commits.pack(fill=BOTH, expand=True)
 
     def cell_double_click(self, event):
         """
@@ -189,5 +204,4 @@ class GitObserverViewer:
         the main application loop
         :return:
         """
-        self.update_observation()
         self.root.mainloop()

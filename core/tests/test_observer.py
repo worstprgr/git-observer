@@ -5,7 +5,7 @@ of parsing functionality is done in a more reliable manner by using one commit l
 """
 import unittest
 
-from GitObserver import GitObserver
+from observer import GitObserver
 import core.paths
 from core.tests.factory import GitObserverFactory
 from core.config.management import ConfigManager
@@ -46,7 +46,7 @@ class GitObserverTest(unittest.TestCase):
         observer = GitObserverFactory.create_default()
 
         # When executing run function
-        observations = observer.run()
+        observations = observer.load_observations()
         # It is expected that the result it not None
         self.assertIsNotNone(observations, 'Expected not-None result when reading dummy commit log file')
         # It is expected that the result it not None
@@ -68,7 +68,7 @@ class GitObserverTest(unittest.TestCase):
             num_lines = sum(1 for _ in dummy_file)
 
         # When executing run function
-        observations = observer.run()
+        observations = observer.load_observations()
         # It is expected that the result count is same as file line count
         self.assertEqual(num_lines, len(observations[0].commits),
                          'Expected to get same result length as line count for dummy commit log file')
@@ -88,7 +88,7 @@ class GitObserverTest(unittest.TestCase):
             num_lines = sum(1 for _ in dummy_file)
 
         # When executing run function
-        observations = observer.run()
+        observations = observer.load_observations()
         # It is expected that the result has fewer commits than defined in file
         self.assertTrue(num_lines > len(observations[0].commits))
         # It is expected that the result count is reduced to 5 since there are only 5 actual commits identified by SHA1
@@ -111,7 +111,7 @@ class GitObserverTest(unittest.TestCase):
         observer = GitObserver(config, is_test_instance=True)
 
         # When executing run function
-        observations = observer.run()
+        observations = observer.load_observations()
         # It is expected that the result does not contain any commit by otto.mustermann
         for obs in observations:
             for cmt in obs.commits:
@@ -185,7 +185,7 @@ class GitObserverLogCommandTest(unittest.TestCase):
         # Given is also target test instance of GitObserver
         observer = GitObserver(config, is_test_instance=True)
         # And the expected flag for descending order
-        expected_descending = '--reverse'
+        expected_descending = '--date-order'
 
         # When building git log command by test instance
         git_log_command = observer.get_git_log_cmd('Test')
@@ -195,7 +195,7 @@ class GitObserverLogCommandTest(unittest.TestCase):
 
     def test_git_log_command_ascending(self):
         """
-        Test if log command of default GitObserver is sorted in date-order
+        Test if log command of default GitObserver is sorted in reverse
         when setting flag descending = False
         :return: None
         """
@@ -206,7 +206,7 @@ class GitObserverLogCommandTest(unittest.TestCase):
         # Given is also target test instance of GitObserver
         observer = GitObserver(config, is_test_instance=True)
         # And the expected flag for ascending order
-        expected_ascending = '--date-order'
+        expected_ascending = '--reverse'
 
         # When building git log command by test instance
         git_log_command = observer.get_git_log_cmd('Test')

@@ -2,13 +2,14 @@
 import subprocess
 from argparse import Namespace
 from logging import INFO
+from threading import Thread
+from time import sleep
 from typing import IO
 
 import core.paths
-from core.transport import Commit, ObservationUtil
+from core.transport import Commit, ObservationUtil, ObservationEvent
 from core.transport import Observation
 from core.logger import Logger
-
 
 c_paths = core.paths.Paths()
 
@@ -74,7 +75,7 @@ class GitObserver:
         :return: argument list to be used when calling external git executable
         """
         sort_flag = '--date-order'
-        if self.descending:
+        if not self.descending:
             sort_flag = '--reverse'
         return [
             'git',
@@ -101,12 +102,12 @@ class GitObserver:
             f'--git-dir={self.filepath}/.git/',
             f'--work-tree={self.filepath}',
             'show',
-            '--pretty=medium',
+            '--pretty=fuller',
             '-s',
             sha1
         ]
 
-    def run(self) -> list[Observation]:
+    def load_observations(self) -> list[Observation]:
         """
         Iterates over all configured observation folders
         and collect their (filtered) log info which then is returned
@@ -136,7 +137,7 @@ class GitObserver:
                 if not line:
                     break
                 commit_line = line.decode("utf-8").rstrip()[1:-1]
-                commit = ObservationUtil.parse_commit_formatted(commit_line)
+                commit = ObservationUtil.parse_commit_formatted(commit_line, self.origin)
                 if commit:
                     git_log.append(commit)
         return git_log
@@ -166,13 +167,6 @@ class GitObserver:
         messages = self.filter_commit_result(response)
         if len(messages) == 0:
             return []
-
-        self.log_info("Found actual changes, will present now")
-        if not self.is_test:
-            for cmt in messages:
-                print(f"{cmt.author} ({cmt.date}): {cmt.message}\n" +
-                      f"{cmt.branch}\n" +
-                      f"{self.origin}{cmt.sha1}\n")
         return messages
 
     def filter_commit_result(self, commits: list[Commit]) -> list[Commit]:
@@ -224,7 +218,6 @@ class GitObserver:
         :param sha1: SHA1
         :return: git show result
         """
-        # TODO: check if this really needs a testing since its basic read from stdout
         git_show_cmd = self.get_git_show_cmd(sha1)
         # Should be a utility for external calls instead of redundant
         response = subprocess.run(git_show_cmd, stdout=subprocess.PIPE)
@@ -239,3 +232,45 @@ class GitObserver:
         """
         if not self.is_test:
             self.logger.log(INFO, message)
+
+
+class GitObserverThread(Thread, GitObserver):
+    """
+    Thread based GitObserver that loads commits every
+    minute and notifies all subscribers over changes using ObservationEvent
+    """
+
+    OnLoaded: ObservationEvent = ObservationEvent()
+    """
+    Public event that can be subscribed.
+    Will be called each minute and contribute loaded new observations
+    """
+    run_thread: bool = True
+    """
+    Signal flag to tell, if loop is active
+    """
+
+    def __init__(self, config: Namespace, is_test_instance: bool = False):
+        """
+        Creates a new instance of this class wrapping GitObserver based
+        on Thread and calls init methods of those parents
+        :return: None
+        """
+        Thread.__init__(self, target=self.__observation_loop)
+        GitObserver.__init__(self, config, is_test_instance)
+
+    def __observation_loop(self):
+        """
+        Internal loop ased on timer.sleep.
+        Ever 60th second, the observations are collected
+        and published using Event functionality
+        :return: None
+        """
+        current_second = 0
+        while self.run_thread:
+            if current_second % 60 == 0:
+                current_second = 0
+                result = self.load_observations()
+                self.OnLoaded.raise_observation_event(result)
+            current_second += 1
+            sleep(1)
