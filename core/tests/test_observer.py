@@ -1,15 +1,17 @@
-import unittest
-
-from GitObserver import GitObserver
-from core.paths import GITLOG_DUMMY, GITLOG_DUMMY_REDUNDANT
-from core.tests.factory import GitObserverFactory
-from core.config.management import ConfigManager
-
 """
 This module tests functionality of GitObserver.
 Please note that there is no UnitTest validating the contents of parsed DUMMY files, since testing
 of parsing functionality is done in a more reliable manner by using one commit line hard-coded in this file
 """
+import unittest
+
+from GitObserver import GitObserver
+import core.paths
+from core.tests.factory import GitObserverFactory
+from core.config.management import ConfigManager
+
+
+c_paths = core.paths.Paths()
 
 
 class GitObserverTest(unittest.TestCase):
@@ -62,7 +64,7 @@ class GitObserverTest(unittest.TestCase):
         observer = GitObserverFactory.create_default()
 
         # Reading the file line count of dummy file represents expected result count
-        with open(GITLOG_DUMMY, 'r') as dummy_file:
+        with open(c_paths.GITLOG_DUMMY, 'r') as dummy_file:
             num_lines = sum(1 for _ in dummy_file)
 
         # When executing run function
@@ -79,10 +81,10 @@ class GitObserverTest(unittest.TestCase):
         """
         # Given is a default GitObserver provided by GitObserverFactory
         observer = GitObserverFactory.create_default()
-        observer.gitlog_dummy_file = GITLOG_DUMMY_REDUNDANT
+        observer.gitlog_dummy_file = c_paths.GITLOG_DUMMY_REDUNDANT
 
         # Reading the file line count of dummy file represents expected result count
-        with open(GITLOG_DUMMY_REDUNDANT, 'r') as dummy_file:
+        with open(c_paths.GITLOG_DUMMY_REDUNDANT, 'r') as dummy_file:
             num_lines = sum(1 for _ in dummy_file)
 
         # When executing run function

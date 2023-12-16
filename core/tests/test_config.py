@@ -3,9 +3,11 @@ import unittest
 
 from core.config.parser import IniConfigParser, ArgConfigParser
 from core.config.management import ConfigManager
-import core.paths as c_paths
+import core.paths
 import core.unittestutils
 
+
+c_paths = core.paths.Paths()
 ut_utils = core.unittestutils.UTUtils()
 ut_utils_ns = core.unittestutils
 

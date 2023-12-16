@@ -5,9 +5,10 @@ import pathlib
 from datetime import datetime
 
 import core.utils as c_utils
-import core.paths as c_paths
+import core.paths
 
 
+c_paths = core.paths.Paths()
 path_utils = c_utils.PathUtils()
 file_utils = c_utils.FileUtils()
 
@@ -42,7 +43,7 @@ class Logger:
     def __init__(self, current_file):
         self.dt_now: datetime = datetime.now()
         self.date_initial_strf: str = self.dt_now.strftime('%Y-%m-%d')
-        self.log_file_name = path_utils.conv_to_path_object(c_paths.LOG_FILE(self.date_initial_strf))
+        self.log_file_name = self.log_file(self.date_initial_strf)
 
         # Create log file, if it doesn't exist
         self.if_log_exists_today(self.log_file_name)
@@ -64,6 +65,12 @@ class Logger:
             fp.touch()
             return False
         return True
+
+    @staticmethod
+    def log_file(current_date: datetime) -> pathlib.Path:
+        log_dir: pathlib.Path = c_paths.LOG_DIR
+        log_file: pathlib.Path = path_utils.conv_to_path_object(f'log_{current_date}.log')
+        return log_dir / log_file
 
     @staticmethod
     def close_logger() -> None:

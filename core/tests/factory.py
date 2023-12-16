@@ -3,8 +3,11 @@ from datetime import datetime
 
 from GitObserver import GitObserver
 from core.config.management import ConfigManager
-import core.paths as c_paths
+import core.paths
 import core.unittestutils
+
+
+c_paths = core.paths.Paths()
 ut_utils = core.unittestutils.UTUtils()
 
 
@@ -24,11 +27,12 @@ class GitObserverFactory:
 
 class LoggerFactory:
     @staticmethod
-    def create_log_file_path():
+    def create_log_file_path() -> pathlib.Path:
         dt_now: datetime = datetime.now()
         date_initial_strf: str = dt_now.strftime('%Y-%m-%d')
-        log_file_name = pathlib.Path(c_paths.LOG_FILE(date_initial_strf))
-        return log_file_name
+        log_dir: pathlib.Path = c_paths.LOG_DIR
+        log_file: pathlib.Path = ut_utils.lazy_path_obj(f'log_{date_initial_strf}.log')
+        return log_dir / log_file
 
 
 class UtilsFactory:

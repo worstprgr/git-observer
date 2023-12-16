@@ -1,8 +1,11 @@
 from argparse import Namespace, ArgumentParser, Action
 from configparser import ConfigParser
 
-import core.paths as c_paths
+import core.paths
 from core.utils import TypeUtil, PathUtils
+
+
+c_paths = core.paths.Paths()
 
 
 class ConfigSourceParser:

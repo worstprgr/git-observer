@@ -2,7 +2,10 @@ from argparse import Namespace
 
 from core.config.parser import ArgConfigParser
 from core.config.parser import IniConfigParser
-import core.paths as c_paths
+import core.paths
+
+
+c_paths = core.paths.Paths()
 
 
 class ConfigManager:

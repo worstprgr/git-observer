@@ -3,9 +3,10 @@ import unittest
 
 import core.unittestutils
 from core.utils import TypeUtil
-import core.paths as c_paths
+import core.paths
 import core.tests.factory
 
+c_paths = core.paths.Paths()
 ut_utils = core.unittestutils.UTUtils()
 
 
