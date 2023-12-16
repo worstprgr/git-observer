@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 import core.utils
 
-
 # Init
 path_utils = core.utils.PathUtils()
-
 
 # Folders
 BASE_DIR: str = path_utils.get_base_dir()

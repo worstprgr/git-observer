@@ -5,7 +5,7 @@ from argparse import Namespace
 
 from GitObserver import GitObserver
 from GitObserverViewer import GitObserverViewer
-from core.config import ConfigHandler
+from core.config.management import ConfigManager
 
 
 def call_commandline(config: Namespace):
@@ -24,7 +24,7 @@ def call_commandline(config: Namespace):
 
 
 if __name__ == '__main__':
-    app_config = ConfigHandler.get_app_config()
+    app_config = ConfigManager.get_config()
     if app_config.show_viewer:
         GitObserverViewer(app_config).run()
     else:
