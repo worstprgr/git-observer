@@ -4,10 +4,13 @@ from argparse import Namespace
 from logging import INFO
 from typing import IO
 
-import core.paths as cpaths
+import core.paths
 from core.transport import Commit, ObservationUtil
 from core.transport import Observation
 from core.logger import Logger
+
+
+c_paths = core.paths.Paths()
 
 
 class GitObserver:
@@ -44,7 +47,7 @@ class GitObserver:
         ]
 
         # Paths
-        self.gitlog_dummy_file: str = cpaths.GITLOG_DUMMY
+        self.gitlog_dummy_file: str = c_paths.GITLOG_DUMMY
         self.log_config()
 
     def log_config(self):
@@ -52,7 +55,7 @@ class GitObserver:
         Logs the given configuration to current instance log
         :return: None
         """
-        # Only log when its not a test
+        # Only log when it's not a test
         if self.is_test:
             return
         self.log_info(f'Origin: "{self.origin}"')
