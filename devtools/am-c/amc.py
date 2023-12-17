@@ -1,9 +1,26 @@
 #!/usr/bin/env python 
 """
-This tool checks, if a Git author, and it's email address matches
-with the white listed entry.
+This tool compares the Git author and e-mail address of the latest commit, against a custom white list.
 
-Note: This isn't an OpSec tool, it's intended as an additional quality gate.
+If it found a match, it prints a success message to stdout.
+Else, it prints an error message to stderr and terminates with an exit code 1.
+
+This tool isn't meant for OpSec, only for an additional quality gate.
+
+Copyright (C) 2023  worstprgr <adam@seishin.io> GPG Key: key.seishin.io
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import pathlib
 import subprocess
@@ -19,9 +36,11 @@ class GitLog:
         self.git_command: list = ['git', 'log', '-1', '--pretty=format:%an %ae']
 
     def get_author_email(self) -> None:
-        # No error handling intended, because when it crashes, it crashes ¯\_(ツ)_/¯
-        # Or in other words: If Git isn't reachable, this script should terminate here anyway
-        git_response: str = subprocess.check_output(self.git_command, stderr=subprocess.STDOUT, text=True)
+        try:
+            git_response: str = subprocess.check_output(self.git_command, stderr=subprocess.STDOUT, text=True)
+        except subprocess.CalledProcessError:
+            print('[ERROR]: No Git installed or no Git repository available')
+            sys.exit(1)
 
         self.author_email: str = git_response.strip().lower()
 

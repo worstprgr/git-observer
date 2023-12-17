@@ -1,6 +1,6 @@
 # Author and E-Mail Check (AM-C)
 ## Description
-This tool compares the author, and it's e-mail address against a custom white list.  
+This tool compares the Git author and e-mail address of the latest commit, against a custom white list.  
 
 If it found a match, it prints a success message to stdout.  
 Else, it prints an error message to stderr and terminates with an exit code 1.
@@ -33,6 +33,6 @@ In GitHub, you can integrate it in your `*.yml` file with:
 ```yaml
     - name: Author and E-Mail check
       run: |
-        python devtools/am-c/amc.py -p whitelist.amc
+        python anypath/am-c/amc.py -p whitelist.amc
 ```
 
