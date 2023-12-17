@@ -4,7 +4,7 @@
 # All options:
 #   https://flake8.pycqa.org/en/latest/user/options.html
 
-name: Static CA
+name: Code Check
 
 on:
   push:
@@ -31,7 +31,17 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyflakes
+        pip install flake8
+
+    - name: Author and E-Mail check
+      run: |
+        python devtools/am-c/amc.py -p whitelist.amc
 
     - name: SCA with pyflakes
       run: |
          pyflakes .
+
+    - name: Lint with flake8
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
