@@ -1,5 +1,4 @@
-[![Linter](https://github.com/worstprgr/git-observer/actions/workflows/flake8.yml/badge.svg)](https://github.com/worstprgr/git-observer/actions/workflows/flake8.yml) 
-[![Static CA](https://github.com/worstprgr/git-observer/actions/workflows/pyflake.yml/badge.svg?branch=main)](https://github.com/worstprgr/git-observer/actions/workflows/pyflake.yml) 
+[![Code Check](https://github.com/worstprgr/git-observer/actions/workflows/codecheck.yml/badge.svg)](https://github.com/worstprgr/git-observer/actions/workflows/codecheck.yml)
 [![Unit Tests](https://github.com/worstprgr/git-observer/actions/workflows/unittest.yml/badge.svg)](https://github.com/worstprgr/git-observer/actions/workflows/unittest.yml) 
 
 # Git Observer
