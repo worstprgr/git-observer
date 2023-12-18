@@ -83,7 +83,7 @@ class SignalUtils:
     the variable 'term_status' changes its state.
 
     The variable is used to change the condition of the while-loop
-    inside the main.py
+    inside a thread or process.
     """
 
     def __init__(self):
