@@ -5,11 +5,13 @@ from logging import INFO
 from threading import Thread
 from time import sleep
 from typing import IO
+import sys
 
 import core.paths
 from core.transport import Commit, ObservationUtil, ObservationEvent
 from core.transport import Observation
 from core.logger import Logger
+from core.utils import SignalUtils
 
 c_paths = core.paths.Paths()
 
@@ -256,21 +258,30 @@ class GitObserverThread(Thread, GitObserver):
         on Thread and calls init methods of those parents
         :return: None
         """
-        Thread.__init__(self, target=self.__observation_loop)
+        self.logger = Logger(__name__).log_init
+        Thread.__init__(self, target=self.__observation_loop, daemon=True)
         GitObserver.__init__(self, config, is_test_instance)
+        self.sig_utl = SignalUtils()
 
     def __observation_loop(self):
         """
-        Internal loop ased on timer.sleep.
+        Internal loop based on timer.sleep.
         Ever 60th second, the observations are collected
         and published using Event functionality
         :return: None
         """
         current_second = 0
-        while self.run_thread:
+        while self.run_thread and self.sig_utl.term_status is False:
             if current_second % 60 == 0:
                 current_second = 0
                 result = self.load_observations()
                 self.OnLoaded.raise_observation_event(result)
             current_second += 1
             sleep(1)
+
+        if self.sig_utl.term_status:
+            self.logger.info('SIGTERM / SIGINT received. Shutting down program.')
+            sys.exit(0)
+        else:
+            self.logger.error('Some unknown error occurred. Please file an issue.')
+            sys.exit(0)

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import pathlib
 import os
+import signal
+from datetime import datetime
 
 
 class FileUtils:
@@ -73,3 +75,22 @@ class TypeUtil:
         if type(default_val) is int:
             return int(value)
         return value
+
+
+class SignalUtils:
+    """
+    If a 'signal interrupt' or a 'signal termination' is received,
+    the variable 'term_status' changes its state.
+
+    The variable is used to change the condition of the while-loop
+    inside the main.py
+    """
+
+    def __init__(self):
+        self.term_status: bool = False
+        signal.signal(signal.SIGINT, self.__terminate)
+        signal.signal(signal.SIGTERM, self.__terminate)
+
+    def __terminate(self, *args) -> None:
+        self.term_status = True
+        print(f'{datetime.now()}: SIGTERM / SIGINT received')

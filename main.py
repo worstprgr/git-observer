@@ -34,6 +34,10 @@ def call_shell(config: Namespace) -> None:
     observer.start()
     print(f'{datetime.datetime.now()}: GitObserver for shell started')
 
+    # Keeping the child thread alive
+    while observer.is_alive():
+        observer.join(1)
+
 
 if __name__ == '__main__':
     app_config = ConfigManager.get_config()
