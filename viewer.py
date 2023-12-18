@@ -12,39 +12,39 @@ from core.transport import Observation, ObservationEventArgs
 from core.transport import ObservationUtil
 
 
-class GitObserverViewer:
+class GitObserverViewer(Tk):
     """
     TKinter based form to show a TreeView containing
     observations column wise
     """
 
     def __init__(self, app_config):
-        self.config = app_config
         """"
         Instantiates a new instance and passes given
         config further down to GitObserver doing the observations
         """
+        super().__init__()
+
         # Force use of descending log output
+        self.config = app_config
         self.config.descending = True
+
         # Instantiate GitObserver with received conf
         self.observer = GitObserverThread(self.config)
         self.observer.OnLoaded += self.observer_loaded
         self.observer.start()
 
-        # Create root window
-        self.root = Tk()
-
         # Get notified when closed
-        self.root.protocol("WM_DELETE_WINDOW", self.root_delete)
+        self.protocol("WM_DELETE_WINDOW", self.root_delete)
 
         # Open PhotoImage to be passed to created form
         icon = PhotoImage(file="static/favicon.png")
-        self.root.iconphoto(True, icon)
-        self.root.title('Git Log Observer')
-        geo = TkUtil.calculate_form_geometry(self.root, 0.7, 0.5)
-        self.root.geometry(geo)
+        self.iconphoto(True, icon)
+        self.title('Git Log Observer')
+        geo = TkUtil.calculate_form_geometry(self, 0.7, 0.5)
+        self.geometry(geo)
 
-        self.view_frame = Frame(self.root)
+        self.view_frame = Frame(self)
         self.view_frame.pack(fill=BOTH, expand=True)
 
         # scrollbar
@@ -76,8 +76,8 @@ class GitObserverViewer:
         :return: None
         """
         # Notify observer thread that its about to die
-        self.observer.run_thread = False
-        self.root.destroy()
+        self.observer.stop_observation()
+        self.destroy()
 
     def observer_loaded(self, e: ObservationEventArgs):
         """
@@ -196,12 +196,4 @@ class GitObserverViewer:
             sha1 = str(tree.item(iid)['values'][col_num])
             if len(sha1) > 0:
                 git_medium_info = self.observer.get_git_show(sha1)
-                TkUtil.show_message_dialog(self.root, git_medium_info)
-
-    def run(self):
-        """
-        Initially updates observations and starts
-        the main application loop
-        :return:
-        """
-        self.root.mainloop()
+                TkUtil.show_message_dialog(self, git_medium_info)

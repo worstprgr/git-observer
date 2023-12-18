@@ -1,6 +1,6 @@
 # Transport objects for representing commit per folder
 from datetime import datetime
-from typing import Callable
+from typing import Callable, Any
 
 from core.event import Event
 
@@ -88,13 +88,8 @@ class ObservationEvent(Event):
         super().__init__()
         self.eventhandler: list[Callable[[ObservationEventArgs], None]] = []
 
-    def raise_observation_event(self, target_observations: list[Observation]) -> None:
-        """
-        Public function to raise event with given transport data
-        :return: None
-        """
-        eventargs = ObservationEventArgs(target_observations)
-        self.__call__(eventargs)
+    def __call__(self, eventargs: Any = None):
+        super().__call__(ObservationEventArgs(eventargs))
 
 
 class ObservationUtil:

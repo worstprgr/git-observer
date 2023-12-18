@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 import pathlib
 import os
+from signal import signal, Signals
+from typing import Callable
+
+from core.event import Event
 
 
 class FileUtils:
@@ -73,3 +77,33 @@ class TypeUtil:
         if type(default_val) is int:
             return int(value)
         return value
+
+
+class SignalEvent(Event):
+    """
+    Event like object to contribute a received Signal
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.eventhandler: list[Callable[[], None]] = []
+
+
+class SignalReceiver:
+    """
+    If a 'signal interrupt' or a 'signal termination' is received,
+    the variable 'term_status' changes its state.
+
+    The variable is used to change the condition of the while-loop
+    inside the main.py
+    """
+
+    OnTerminate: SignalEvent = SignalEvent()
+
+    def __init__(self):
+        signal(Signals.SIGINT, self.__terminate)
+        signal(Signals.SIGTERM, self.__terminate)
+        signal(Signals.SIGILL, self.__terminate)
+
+    def __terminate(self, *args) -> None:
+        self.OnTerminate()

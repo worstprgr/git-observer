@@ -245,7 +245,7 @@ class GitObserverThread(Thread, GitObserver):
     Public event that can be subscribed.
     Will be called each minute and contribute loaded new observations
     """
-    run_thread: bool = True
+    __run_thread: bool
     """
     Signal flag to tell, if loop is active
     """
@@ -256,22 +256,27 @@ class GitObserverThread(Thread, GitObserver):
         on Thread and calls init methods of those parents
         :return: None
         """
+        self.__run_thread = True
         self.OnLoaded = ObservationEvent()
-        Thread.__init__(self, target=self.__observation_loop)
+        Thread.__init__(self, target=self.__observation_loop, daemon=True)
         GitObserver.__init__(self, config, is_test_instance)
 
     def __observation_loop(self):
         """
-        Internal loop ased on timer.sleep.
+        Internal loop based on timer.sleep.
         Ever 60th second, the observations are collected
         and published using Event functionality
         :return: None
         """
         current_second = 0
-        while self.run_thread:
+        while self.__run_thread:
             if current_second % 60 == 0:
                 current_second = 0
                 result = self.load_observations()
-                self.OnLoaded.raise_observation_event(result)
+                self.OnLoaded(result)
             current_second += 1
             sleep(1)
+
+    def stop_observation(self):
+        self.logger.info("Shutting down thread")
+        self.__run_thread = False
