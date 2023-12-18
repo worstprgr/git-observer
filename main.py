@@ -6,6 +6,11 @@ from core.config.management import ConfigManager
 from core.transport import ObservationEventArgs
 from observer import GitObserverThread
 from viewer import GitObserverViewer
+from core.utils import SignalUtils
+from core.logger import Logger
+
+sig_utl = SignalUtils()
+log = Logger(__name__).log_init
 
 
 def observer_loaded(e: ObservationEventArgs) -> None:
@@ -34,9 +39,11 @@ def call_shell(config: Namespace) -> None:
     observer.start()
     print(f'{datetime.datetime.now()}: GitObserver for shell started')
 
-    # Keeping the child thread alive
-    while observer.is_alive():
-        observer.join(1)
+    while True:
+        if sig_utl.term_status:
+            observer.run_thread = False
+            log.info('SIGTERM / SIGINT received. Shutting down program.')
+            break
 
 
 if __name__ == '__main__':
