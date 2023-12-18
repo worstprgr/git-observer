@@ -9,6 +9,7 @@
 # Files
 gitlog.txt
 *.log
+*conf.ini
 
 # Keys
 *.private*

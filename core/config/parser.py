@@ -55,7 +55,7 @@ class IniConfigParser(ConfigSourceParser):
         :return: Namespace holding the config parameters
         """
         parser = ConfigParser()
-        parser.read(self.config_ini_file)
+        parser.read(self.config_ini_file, encoding='utf8')
         if 'Default' not in parser.sections():
             raise RuntimeError('Invalid config file given')
 
@@ -89,7 +89,7 @@ class IniConfigParser(ConfigSourceParser):
                 config['Default'][key] = str(value)
         config['Default'].show_viewer = True
         config['Default'].descending = True
-        with open(self.config_ini_file, 'w') as ini:
+        with open(self.config_ini_file, 'w', encoding='utf8') as ini:
             config.write(ini)
 
 
