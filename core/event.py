@@ -20,6 +20,9 @@ class Event(object):
         self.eventhandler.remove(handler)
         return self
 
-    def __call__(self, eventargs: Any):
+    def __call__(self, eventargs: Any = None):
         for handler in self.eventhandler:
-            handler(eventargs)
+            if eventargs:
+                handler(eventargs)
+            else:
+                handler()
