@@ -240,7 +240,7 @@ class GitObserverThread(Thread, GitObserver):
     minute and notifies all subscribers over changes using ObservationEvent
     """
 
-    OnLoaded: ObservationEvent = ObservationEvent()
+    OnLoaded: ObservationEvent
     """
     Public event that can be subscribed.
     Will be called each minute and contribute loaded new observations
@@ -256,6 +256,7 @@ class GitObserverThread(Thread, GitObserver):
         on Thread and calls init methods of those parents
         :return: None
         """
+        self.OnLoaded = ObservationEvent()
         Thread.__init__(self, target=self.__observation_loop)
         GitObserver.__init__(self, config, is_test_instance)
 

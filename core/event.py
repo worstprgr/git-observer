@@ -1,26 +1,25 @@
 from typing import Any, Callable
 
 
-class Event:
+class Event(object):
     """
     Event like object to contribute information to a
     subscribers list
     """
 
-    __eventhandler: list[Callable[[Any], None]] = []
-    """
-    INTERNAL
-    List of subscribed handler fulfilling the required Callable signature
-    """
+    eventhandler: list[Callable]
+
+    def __init__(self):
+        self.eventhandler = []
 
     def __iadd__(self, handler: Callable[[Any], None]):
-        self.__eventhandler.append(handler)
+        self.eventhandler.append(handler)
         return self
 
     def __isub__(self, handler: Callable):
-        self.__eventhandler.remove(handler)
+        self.eventhandler.remove(handler)
         return self
 
     def __call__(self, eventargs: Any):
-        for eventhandler in self.__eventhandler:
-            eventhandler(eventargs)
+        for handler in self.eventhandler:
+            handler(eventargs)

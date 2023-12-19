@@ -84,11 +84,9 @@ class ObservationEvent(Event):
     to subscribers interested in them
     """
 
-    __eventhandler: list[Callable[[ObservationEventArgs], None]] = []
-    """
-    INTERNAL
-    Overridden list of subscribed handler fulfilling the required Callable signature
-    """
+    def __init__(self):
+        super().__init__()
+        self.eventhandler: list[Callable[[ObservationEventArgs], None]] = []
 
     def raise_observation_event(self, target_observations: list[Observation]) -> None:
         """
