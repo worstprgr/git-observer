@@ -43,6 +43,7 @@ class Paths:
 
         # Files
         self.CONFIG_INI = self.BASE_DIR, '/conf.ini'
+        self.FAVICON = self.STATIC_DIR, '/favicon.png'
 
         # Unittest
         self.BUNNY_FILE = self.STATIC_UT_DIR, '/bunny.txt'
