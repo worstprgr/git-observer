@@ -10,6 +10,10 @@ from observer import GitObserverThread
 from core.tkinter.TkUtil import TkUtil
 from core.transport import Observation, ObservationEventArgs
 from core.transport import ObservationUtil
+from core.paths import Paths
+
+
+c_paths = Paths()
 
 
 class GitObserverViewer(Tk):
@@ -38,7 +42,7 @@ class GitObserverViewer(Tk):
         self.protocol("WM_DELETE_WINDOW", self.root_delete)
 
         # Open PhotoImage to be passed to created form
-        icon = PhotoImage(file="static/favicon.png")
+        icon = PhotoImage(file=c_paths.FAVICON)
         self.iconphoto(True, icon)
         self.title('Git Log Observer')
         geo = TkUtil.calculate_form_geometry(self, 0.7, 0.5)

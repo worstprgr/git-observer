@@ -5,6 +5,7 @@
 *__pycache__/
 /.vscode/
 *.pytest_cache
+/.run/
 
 # Files
 gitlog.txt
