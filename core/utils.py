@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+import math
 import pathlib
 import os
+from collections import namedtuple
 from signal import signal, Signals
 from typing import Callable
 
@@ -77,6 +79,39 @@ class TypeUtil:
         if type(default_val) is int:
             return int(value)
         return value
+
+
+class TimeUtil:
+    """
+    Helper class that implements functionalities
+    in special cases required when working with time and date
+    """
+
+    @staticmethod
+    def calculate_countdown(interval_ms: float, current_ms: float) -> namedtuple:
+        """
+        Calculates the difference of an interval based on its length and how
+        much time is done currently, both in unit milliseconds.
+        :param interval_ms: Total length of interval
+        :param current_ms: Current ran milliseconds since interval start
+        :return: namedtuple representing minutes, seconds and milliseconds left, until interval end is reached
+        """
+        result = namedtuple("int", "min, second, millisecond")
+
+        # Calculate from millisecond to second
+        delta_s = (interval_ms - current_ms) / 1000.0
+        # Determine minute amount and rest representing seconds
+        min_left, seconds_left = divmod(delta_s, 60.0)
+        result.min = math.trunc(min_left)
+
+        # Calculate rest seconds back to millisecond
+        mod_ms = seconds_left * 1000.0
+
+        # determine seconds and the rest representing milliseconds
+        seconds_left, ms_left = divmod(mod_ms, 1000.0)
+        result.second = math.trunc(seconds_left)
+        result.millisecond = math.trunc(ms_left)
+        return result
 
 
 class SignalEvent(Event):
