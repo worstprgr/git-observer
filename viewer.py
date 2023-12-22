@@ -1,10 +1,9 @@
 import webbrowser as wb
 from datetime import datetime
-from tkinter import BOTH, BOTTOM, RIGHT, X, Y, ttk, PhotoImage, LEFT
-from tkinter import Frame
-from tkinter import Scrollbar
-from tkinter import Tk
+from tkinter import BOTH, BOTTOM, NORMAL, NW, RIGHT, TOP, X, Y, ttk, PhotoImage, LEFT
+from tkinter import Tk, Frame, Scrollbar, Label
 from tkinter.ttk import Sizegrip
+from core.event import StatusEventArgs
 
 from observer import GitObserverThread
 from core.tkinter.TkUtil import TkUtil
@@ -36,6 +35,7 @@ class GitObserverViewer(Tk):
         # Instantiate GitObserver with received conf
         self.observer = GitObserverThread(self.config)
         self.observer.OnLoaded += self.observer_loaded
+        self.observer.OnStatus += self.observer_status
         self.observer.start()
 
         # Get notified when closed
@@ -53,9 +53,12 @@ class GitObserverViewer(Tk):
 
         # scrollbar
         # H-Scroll container since contains a scroll bar and a sizegrip
-        self.h_scroll_stack = Frame(self.view_frame)
+        self.h_scroll_stack = Frame(self.view_frame, background='lightgray')
         self.sizegrip = Sizegrip(self.h_scroll_stack)
-        self.sizegrip.pack(side=RIGHT)
+        self.sizegrip.pack(side=RIGHT, fill=Y)
+
+        self.status_bar = Label(self.h_scroll_stack, text="Initializing...", background='lightgray')
+        self.status_bar.pack(side=TOP, anchor=NW, padx=3)
 
         self.view_scroll_x = Scrollbar(self.h_scroll_stack, orient='horizontal')
         self.view_scroll_x.pack(side=LEFT, fill=X, expand=True)
@@ -83,15 +86,20 @@ class GitObserverViewer(Tk):
         self.observer.stop_observation()
         self.destroy()
 
-    def observer_loaded(self, e: ObservationEventArgs):
+    def observer_loaded(self, observation_args: ObservationEventArgs):
         """
         Event handler that reacts on external event
         of successfully loaded observations
         :return: None
         """
-        if e is None:
+        if observation_args is None:
             return
-        self.update_view(e.observations)
+        self.update_view(observation_args.observations)
+
+    def observer_status(self, status_args: StatusEventArgs):
+        if self.wm_state() == NORMAL:
+            status_text = f'Status: {status_args.status}'
+            self.status_bar.config(text=status_text)
 
     def update_view(self, observations: list[Observation]):
         """

@@ -61,13 +61,14 @@ class IniConfigParser(ConfigSourceParser):
 
         config_result = Namespace()
         for key in parser['Default'].keys():
-            def_value = self.default_config[key]
+            internal_key = key.replace('-', '_').replace('r\n', '').replace('\n', '')
+            def_value = self.default_config[internal_key]
             file_value = None
             if key in parser['Default']:
                 file_value = parser['Default'][key]
 
             if file_value:
-                config_result.__dict__[key] = TypeUtil.parse_value(file_value, def_value)
+                config_result.__dict__[internal_key] = TypeUtil.parse_value(file_value, def_value)
         return config_result
 
     def install(self):

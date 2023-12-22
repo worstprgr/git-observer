@@ -5,11 +5,13 @@ from logging import INFO
 from threading import Thread
 from time import sleep
 from typing import IO
+from core.event import Event, StatusEvent
 
 import core.paths
 from core.transport import Commit, ObservationUtil, ObservationEvent
 from core.transport import Observation
 from core.logger import Logger
+from core.utils import TimeUtil
 
 c_paths = core.paths.Paths()
 
@@ -19,6 +21,7 @@ class GitObserver:
     Controller to get access to git log messages including
     filtering for ignored authors and specific folders to observe
     """
+    OnStatus: Event
 
     def __init__(self, config: Namespace, is_test_instance: bool = False):
         """
@@ -28,6 +31,8 @@ class GitObserver:
         :param config: Configuration provided by caller
         :param is_test_instance: [Optional] flag if test mode
         """
+        self.OnStatus = StatusEvent()
+
         self.logger = Logger(__name__).log_init
         self.is_test = is_test_instance
         self.known_hashes: list[str] = []
@@ -115,7 +120,9 @@ class GitObserver:
         """
         observations: list[Observation] = []
         if not self.is_test:
+            self.OnStatus("Git fetch...")
             subprocess.run(self.git_fetch, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
         for path in self.logfolders:
             messages = self.handle_observed_path(path)
             observations.append(Observation(path, messages))
@@ -163,7 +170,9 @@ class GitObserver:
         :param path: observed path
         :return: list of parsed and filtered commits
         """
+        self.OnStatus(f"Git log ({path})...")
         response = self.read_git_commits(path)
+        self.OnStatus(f"Reading {path} commits...")
         messages = self.filter_commit_result(response)
         if len(messages) == 0:
             return []
@@ -268,14 +277,20 @@ class GitObserverThread(Thread, GitObserver):
         and published using Event functionality
         :return: None
         """
-        current_second = 0
+        # May this should be configurable
+        interval_ms = 1000 * 60
+        ms_since_last_iteration = interval_ms + 1
         while self.__run_thread:
-            if current_second % 60 == 0:
-                current_second = 0
+            if ms_since_last_iteration >= interval_ms:
+                ms_since_last_iteration = 0
                 result = self.load_observations()
                 self.OnLoaded(result)
-            current_second += 1
-            sleep(1)
+            else:
+                delta = TimeUtil.calculate_countdown(interval_ms, ms_since_last_iteration)
+                status = f'Waiting for iteration {delta.min:02d}:{delta.second:02d}'
+                self.OnStatus(status)
+            sleep(0.25)
+            ms_since_last_iteration += 250
 
     def stop_observation(self):
         self.logger.info("Shutting down thread")
