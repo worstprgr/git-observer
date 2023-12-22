@@ -4,7 +4,6 @@ from core.config.parser import IniConfigParser, ArgConfigParser
 from core.paths import Paths
 from core.unittestutils import UTUtils
 from core.config.tests.factory import ManagementFactory
-from devtools.tools.ispycharm import is_pycharm_active
 
 c_paths = Paths()
 ut_utils = UTUtils()
@@ -13,7 +12,7 @@ ut_utils = UTUtils()
 class TestIniConfigParser(unittest.TestCase):
     def test_has_config(self):
         """
-        Testing the correct boolean output, the config file exists or not.
+        Testing the correct boolean output, if the config file exists or not.
         """
         # Given
         the_existing_file = c_paths.CONF_INI_DUMMY
@@ -83,11 +82,6 @@ class TestIniConfigParser(unittest.TestCase):
         ut_utils.delete_file(c_paths.CONFIG_INI)
 
 
-# Testing Argparse using PyCharm results in weird errors, because the wrapped UT runner
-# from PyCharm, conflicts here. So skipping this test if IDE = PyCharm.
-#
-# This tests works outside PyCharm.
-@unittest.skipIf(is_pycharm_active(), 'Skipping if IDE is PyCharm.')
 class TestArgConfigParser(unittest.TestCase):
     def test_build_parser(self):
         """
