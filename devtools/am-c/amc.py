@@ -26,6 +26,7 @@ import pathlib
 import subprocess
 import sys
 import argparse
+import os
 
 
 class GitLog:
@@ -45,13 +46,38 @@ class GitLog:
         self.author_email: str = git_response.strip().lower()
 
 
-class FetchWhitelist:
-    def __init__(self, wl_path: pathlib.Path):
+class FetchSecretEnvVariable:
+    def __init__(self):
+        self.whitelist_env: str = 'WHITELIST_AMC'
+
+    def get_env(self) -> list[str]:
+        env: str = os.environ.get(self.whitelist_env)
+        if env is None or env == '':
+            print('Secret environment variable not found')
+            sys.exit(1)
+        else:
+            env: list = env.strip().split('\n')
+            return env
+
+
+class FetchWhitelist(FetchSecretEnvVariable):
+    def __init__(self, wl_path: pathlib.Path, secret_env: bool):
+        super().__init__()
         self.whitelist_file: pathlib.Path = wl_path
         self.author_email: list = []
         self.ignore_symbol: str = '#'
+        self.secret_env = secret_env
 
-    def open_parse_whitelist(self) -> None:
+    def fetch(self):
+        if self.secret_env:
+            self.parse_whitelist_env()
+        else:
+            self.parse_whitelist_file()
+
+    def parse_whitelist_env(self) -> None:
+        self.author_email += self.get_env()
+
+    def parse_whitelist_file(self) -> None:
         try:
             with open(self.whitelist_file, 'r', encoding='utf8') as f:
                 whitelist: list = f.readlines()
@@ -82,25 +108,30 @@ class FilePaths:
 class ArgHandler:
     def __init__(self):
         # Parser
-        self.path_help = 'A custom path to the whitelist file.'
+        self.path_help = 'A custom path to the whitelist file. Usage: -p <Your Path>'
+        self.secret_help = 'Enables the checking via a secret variable, setup in your CI pipeline ' \
+                           '-> README.md for more information'
         self.parser = argparse.ArgumentParser()
-        self.parser.add_argument('-p', '--path', action='store')
+        self.parser.add_argument('-p', '--path', action='store', help=self.path_help)
+        self.parser.add_argument('-s', '--secret', action='store_true', help=self.secret_help)
 
         # Args
         self.args = self.parser.parse_args()
         self.custom_path = self.args.path
+        self.secret = self.args.secret
 
 
 class Main:
-    def __init__(self, whitelist_path):
+    def __init__(self, whitelist_path, secret_env: bool):
         # Init
-        self.fw = FetchWhitelist(whitelist_path)
+        self.fw = FetchWhitelist(whitelist_path, secret_env)
         self.gl = GitLog()
         self.error: bool = True
+        self.secret_mode: bool = secret_env
 
     def run_check(self):
         # Run actions
-        self.fw.open_parse_whitelist()
+        self.fw.fetch()
         self.gl.get_author_email()
 
         # Data to compare
@@ -111,11 +142,14 @@ class Main:
         self.cmp(git_log_author_email, whitelist_author_email)
 
         if not self.error:
-            print('[OK]: Author & E-Mail address is matching with whitelist')
+            print('[OK]: Authors & E-Mail addresses are matching with whitelist')
 
     def cmp(self, from_git: str, from_whitelist: list) -> None or Exception:
         if not (from_git in from_whitelist):
-            print(f'[ERROR]: "{from_git}" not found in whitelist', file=sys.stderr)
+            if self.secret_mode:
+                print('[ERROR]: Author(s) and E-Mail addresses not found in whitelist', file=sys.stderr)
+            else:
+                print(f'[ERROR]: "{from_git}" not found in whitelist', file=sys.stderr)
             sys.exit(1)
         self.error = False
 
@@ -123,5 +157,5 @@ class Main:
 if __name__ == '__main__':
     ap = ArgHandler()
     p = FilePaths(ap.custom_path)
-    m = Main(p.whitelist_file)
+    m = Main(p.whitelist_file, ap.secret)
     m.run_check()
