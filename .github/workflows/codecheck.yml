@@ -34,8 +34,10 @@ jobs:
         pip install flake8
 
     - name: Author and E-Mail check
+      env:
+        WHITELIST_AMC: ${{ secrets.WHITELIST_AMC }}
       run: |
-        python devtools/am-c/amc.py -p whitelist.amc
+        python devtools/am-c/amc.py -s
 
     - name: SCA with pyflakes
       run: |
