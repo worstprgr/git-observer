@@ -40,7 +40,7 @@ class UTUtils:
         return False
 
     def if_all_lines_begin_with(self, fp: str | pathlib.Path = None, namespace: argparse.Namespace = None,
-                                keywords: list = None) -> bool:
+                                keywords: list | dict = None) -> bool:
         """
         Checks if items in the text file are existing.
         Note: It only checks, if the line begins with the desired keyword.
@@ -50,9 +50,14 @@ class UTUtils:
 
         :param fp: Filepath as string or path-like-object.
         :param namespace: Namespace from argparse.
-        :param keywords: Keywords to check against as a list.
+        :param keywords: Keywords to check against as a list. If dict is provided, it converts the keys to a list.
         :return: True, if every keyword exists. False, if one or more keywords are missing.
         """
+        if type(keywords) is dict:
+            keywords: dict
+            _key: dict
+            keywords: list = [_key for _key in keywords.keys()]
+
         _content: list = []
 
         if fp and not namespace:
@@ -65,8 +70,6 @@ class UTUtils:
                 if x != '\n':
                     _content.append(x.strip())
         elif namespace and not fp:
-            keywords = keywords[1:]  # truncate, because in a namespace, there's no "[Default]"
-
             for key in namespace.__dict__:
                 _content.append(key)
         else:
