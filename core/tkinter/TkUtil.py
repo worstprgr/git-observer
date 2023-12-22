@@ -73,7 +73,7 @@ class TkUtil:
         width = TkUtil.calculate_width(root, width_percent=width_percent)
         height = TkUtil.calculate_height(root, height_percent=height_percent)
 
-        root_maximized = bool(('-zoomed' in root.attributes() and root.attributes('-zoomed')) 
+        root_maximized = bool(('-zoomed' in root.attributes() and root.attributes('-zoomed'))
                               or (root.wm_state() == 'zoomed'))
         # get screen width and height
         if root_maximized:

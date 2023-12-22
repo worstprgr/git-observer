@@ -16,7 +16,7 @@ __run_main = True
 def global_sigterm():
     """
     Event handler to receive exit signals by system, provided
-    by SignalReceiver.  
+    by SignalReceiver.
     Sets the main thread flag __run_main to False
     :return: None
     """

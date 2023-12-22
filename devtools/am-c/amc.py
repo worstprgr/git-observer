@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 """
 This tool compares the Git author and e-mail address of the latest commit, against a custom white list.
 
@@ -97,11 +97,13 @@ class FetchWhitelist(FetchSecretEnvVariable):
 class FilePaths:
     def __init__(self, path: str = None):
         self.whitelist_file: pathlib.Path = self.conv_path('whitelist.amc')
-        if path: self.whitelist_file = self.conv_path(path)
+        if path:
+            self.whitelist_file = self.conv_path(path)
 
     @staticmethod
     def conv_path(path: str) -> pathlib.Path:
-        if type(path) == str: return pathlib.Path(path)
+        if type(path) is str:
+            return pathlib.Path(path)
         return path
 
 
