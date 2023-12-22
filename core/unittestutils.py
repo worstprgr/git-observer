@@ -55,7 +55,6 @@ class UTUtils:
         """
         if type(keywords) is dict:
             keywords: dict
-            _key: dict
             keywords: list = [_key for _key in keywords.keys()]
 
         _content: list = []
