@@ -35,7 +35,7 @@ class UTUtils:
 
     @staticmethod
     def cmp_types(obj: any, check_type: type) -> bool:
-        if type(obj) == check_type:
+        if type(obj) is check_type:
             return True
         return False
 

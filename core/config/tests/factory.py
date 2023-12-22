@@ -47,7 +47,7 @@ class ManagementFactory:
         """
         tmp_list: list = []
         for index, x in enumerate(test_args):
-            if type(x) == list:
+            if type(x) is list:
                 arg = [available_args[index]] + x
             elif x is True:
                 arg = [available_args[index]]
