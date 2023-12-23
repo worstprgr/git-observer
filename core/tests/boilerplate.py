@@ -37,7 +37,8 @@ class MyTestCase(unittest.TestCase):
 
         # When
         # Function, that accesses the 6th item in the list (which does not exist)
-        def provoke_index_error(test_list): return test_list[5]
+        def provoke_index_error(test_list):
+            return test_list[5]
 
         # Then
         # The assertion happens inside a `context manager`.
