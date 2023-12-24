@@ -2,6 +2,8 @@
 import math
 import pathlib
 import os
+import platform
+import logging
 from collections import namedtuple
 from signal import signal, Signals
 from typing import Callable
@@ -56,6 +58,18 @@ class PathUtils:
     @staticmethod
     def conv_to_path_object(fp: str) -> pathlib.Path:
         return pathlib.Path(fp)
+
+    @staticmethod
+    def file_or_folder_exists(fp: pathlib.Path) -> bool:
+        if fp is None or fp == '':
+            raise RuntimeError('Path should not be empty')
+        is_folder = os.path.isdir(fp)
+        is_file = os.path.isfile(fp)
+        is_f_existing = is_file, is_folder
+
+        if True in is_f_existing:
+            return True
+        return False
 
 
 class TypeUtil:
@@ -142,3 +156,32 @@ class SignalReceiver:
 
     def __terminate(self, *args) -> None:
         self.OnTerminate()
+
+
+class EnvUtils:
+    """
+    A collection of methods for interacting with the os environment,
+    that are isolated from :class: `EnvironmentCheck`.
+    """
+    @staticmethod
+    def is_desktop() -> bool:
+        env_type = platform.system()
+
+        # Is there even a Windows without desktop?
+        if env_type == "Linux":
+            return "DISPLAY" in os.environ
+        return True
+
+
+class LogUtils:
+    @staticmethod
+    def disable_logging(func):
+        """
+        This is a decorator, for disabling logging on single methods.
+        """
+        def wrapper(*args, **kwargs):
+            logging.disable(logging.CRITICAL)
+            result = func(*args, **kwargs)
+            logging.disable(logging.NOTSET)
+            return result
+        return wrapper

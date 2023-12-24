@@ -50,3 +50,12 @@ jgs   {_\______\-'\__\_\
 
         with open(file, 'w+', encoding='utf8') as f:
             f.write(bunny)
+
+
+class EnvCheckFactory:
+    @staticmethod
+    def convert_list_to_dict(_list) -> dict:
+        _dict: dict = {}
+        for x in _list:
+            _dict.update({x: 'Test'})
+        return _dict
