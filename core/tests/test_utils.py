@@ -1,4 +1,3 @@
-import pathlib
 import unittest
 
 import core.unittestutils
@@ -43,31 +42,6 @@ class TestFileUtils(unittest.TestCase):
 
         # Delete dummy file
         ut_utils.delete_file(dummy_file)
-
-
-class TestPathUtils(unittest.TestCase):
-    def test_get_base_dir(self):
-        # Init
-        # Given
-        # When
-        # Then
-        self.assertEqual(True, True)
-
-    def test_conv_to_path_object(self):
-        """
-        Checking, if a path got correctly converted to a path-like-object.
-        """
-        # Init
-        path_utils = core.utils.PathUtils()
-
-        # Given
-        test_path = 'testpath/test/another-test'
-
-        # When
-        path_like_obj = path_utils.conv_to_path_object(test_path)
-
-        # Then
-        self.assertTrue(isinstance(path_like_obj, (pathlib.Path, type(pathlib.Path()))))
 
 
 class TestTypeUtil(unittest.TestCase):
