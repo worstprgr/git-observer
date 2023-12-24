@@ -2,12 +2,16 @@
 from argparse import Namespace
 from time import sleep
 
+from core.envcheck import EnvironmentCheck
 from core.config.management import ConfigManager
 from core.transport import Observation, ObservationUtil
 from observer import GitObserver
 from viewer import GitObserverViewer
-from core.utils import SignalReceiver
+from core.utils import SignalReceiver, EnvUtils
 from core.logger import Logger
+
+
+EnvironmentCheck().env_check()
 
 log = Logger(__name__).log_init
 __run_main = True
@@ -70,13 +74,17 @@ def call_viewer(config: Namespace, sig_recv: SignalReceiver) -> None:
 
 if __name__ == '__main__':
     app_config = ConfigManager.get_config()
+    has_desktop = EnvUtils().is_desktop()
 
     # React to SIGTERM/-INIT
     signal_receiver = SignalReceiver()
     signal_receiver.OnTerminate += global_sigterm
 
     if app_config.show_viewer:
-        call_viewer(app_config, signal_receiver)
+        if has_desktop:
+            call_viewer(app_config, signal_receiver)
+        else:
+            log.error('Your system has no desktop. Can not open GUI.')
     else:
         # Calc interval duration
         interval_dur_s = 60

@@ -9,27 +9,27 @@ path_utils = core.utils.PathUtils()
 
 class Paths:
     """
-    Converts all string paths to path like objects. \n\n
+    Converts all string paths to path like objects.
 
-    **Usage** \n
-    *import core.paths* \n\n
+    **Usage**
+    *import core.paths*
 
-    *c_paths = core.paths.Paths()* \n\n
+    *c_paths = core.paths.Paths()*
 
-    *config_ini = c_paths.CONFIG_INI* \n
-    *bunny_file = c_paths.BUNNY_FILE* \n\n
+    *config_ini = c_paths.CONFIG_INI*
+    *bunny_file = c_paths.BUNNY_FILE*
     """
     def __init__(self):
         """
-        *Implementation of a new path*\n\n
+        *Implementation of a new path*
 
-        Concatenating a path like object with a string:\n
-        *self.new_path = self.PATH_1, '/file.txt'*\n\n
+        Concatenating a path like object with a string:
+        *self.new_path = self.PATH_1, '/file.txt'*
 
-        Concatenating two path like objects:\n
-        *self.new_path = self.PATH_1, '/', self.PATH_2*\n\n
+        Concatenating two path like objects:
+        *self.new_path = self.PATH_1, '/', self.PATH_2*
 
-        Concatenating two path like objects and a file as string:\n
+        Concatenating two path like objects and a file as string:
         *self.new_path = self.PATH_1, '/', self.PATH_2, '/file.txt'*
         """
         # Root directory of the project
@@ -40,6 +40,7 @@ class Paths:
         self.STATIC_DIR = self.BASE_DIR, '/static'
         self.LOG_DIR = self.BASE_DIR, '/logs'
         self.STATIC_UT_DIR = self.STATIC_DIR, '/unittest'
+        self.GIT_FOLDER = self.BASE_DIR, '/.git'
 
         # Files
         self.CONFIG_INI = self.BASE_DIR, '/conf.ini'

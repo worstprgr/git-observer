@@ -81,11 +81,9 @@ class UTUtils:
         return True
 
 
-class TestNamespace(dict):
+class DummyNamespace:
     """
     Generic namespace container for a dictionary.
     """
-    def __getattr__(self, attr):
-        if attr in self:
-            return self[attr]
-        raise AttributeError
+    def __init__(self, data):
+        self.__dict__.update(data)
