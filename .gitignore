@@ -11,6 +11,8 @@
 gitlog.txt
 *.log
 *conf.ini
+run_ci.cmd
+dbg.py
 
 # Keys
 *.private*
