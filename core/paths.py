@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-import pathlib
-
 import core.utils
 
 # Init
@@ -12,7 +10,7 @@ class Paths:
     Converts all string paths to path like objects.
 
     **Usage**
-    *import core.paths*
+    *import core.Paths*
 
     *c_paths = core.paths.Paths()*
 
@@ -57,7 +55,7 @@ class Paths:
             if not name.startswith('__') and not callable(getattr(self, name)):
                 nested_paths: tuple = getattr(self, name)
                 nested_paths: str = self.flatten_tuple(nested_paths)
-                setattr(self, name, pathlib.Path(nested_paths))
+                setattr(self, name, path_utils.conv_to_path_object(nested_paths))
 
     def flatten_tuple(self, nested_tuple):
         result = ""
