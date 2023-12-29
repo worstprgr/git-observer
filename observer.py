@@ -23,6 +23,13 @@ class GitObserver:
     """
     OnStatus: Event
 
+    __git_authors__: list[str] = [
+        'git',
+        'log',
+        '--all',
+        '--format=%aN'
+    ]
+
     def __init__(self, config: Namespace, is_test_instance: bool = False):
         """
         Initializes a new instance of GitObserver controller class
@@ -55,6 +62,7 @@ class GitObserver:
         # Paths
         self.gitlog_dummy_file: str = c_paths.GITLOG_DUMMY
         self.log_config()
+        self.check_config()
 
     def log_config(self):
         """
@@ -71,6 +79,24 @@ class GitObserver:
             self.log_info(f'Observed folders: {str.join(", ", self.logfolders)}')
         if self.ignore and len(self.ignore) > 0:
             self.log_info(f'Ignored authors: {str.join(", ", self.ignore)}')
+
+    def check_config(self):
+        result_lines: str = self.call_subprocess(self.__git_authors__)
+        authors = list(set(result_lines.strip().split('\n')))
+        author_count = len(authors)
+        ignore_count = len(self.ignore)
+        max_ignore = int(author_count / 2.0)
+        if author_count > 10:
+            max_ignore = int(author_count / 4.0)
+
+        if ignore_count >= author_count:
+            self.logger.warn(f'Strange param detected: ignoring {ignore_count} but only '
+                             f'{author_count} authors are committing? Please consider reading the manual.')
+        elif ignore_count >= max_ignore:
+            self.logger.warn('Possible policy breach detected:\n'
+                             f'ignoring {ignore_count} from '
+                             f'{author_count} authors in total.\n'
+                             'Please note that tracking natural persons is strictly not intended by this software')
 
     def get_git_log_cmd(self, path: str) -> list[str]:
         """
@@ -228,8 +254,12 @@ class GitObserver:
         :return: git show result
         """
         git_show_cmd = self.get_git_show_cmd(sha1)
+        return self.call_subprocess(git_show_cmd)
+
+    @staticmethod
+    def call_subprocess(command: list[str]) -> str:
         # Should be a utility for external calls instead of redundant
-        response = subprocess.run(git_show_cmd, stdout=subprocess.PIPE)
+        response = subprocess.run(command, stdout=subprocess.PIPE)
         return response.stdout.decode("utf-8")
 
     def log_info(self, message: str):
