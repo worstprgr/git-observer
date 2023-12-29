@@ -1,5 +1,6 @@
 import unittest
 
+from core.config.management import ConfigManager
 from core.config.parser import IniConfigParser, ArgConfigParser
 from core.paths import Paths
 from core.unittestutils import UTUtils
@@ -25,8 +26,8 @@ class TestIniConfigParser(unittest.TestCase):
         check_file_b = file_not_exist.has_config()
 
         # Then
-        self.assertEqual(True, check_file_a)
-        self.assertEqual(False, check_file_b)
+        self.assertTrue(check_file_a)
+        self.assertFalse(check_file_b)
 
         # Delete files
         ut_utils.delete_file(the_existing_file)
@@ -119,6 +120,67 @@ class TestArgConfigParser(unittest.TestCase):
 
         # Then
         self.assertEqual(True, cmp_argparse_in_out)
+
+
+class IniConfigTest(unittest.TestCase):
+
+    def test_unchanged(self):
+        """
+        Tests if the ConfigManager.__has_changes__ detects no changes correctly
+        """
+        # Given is a default config setup
+        ConfigManager.__active_config__ = ConfigManager.get_defaults()
+        # And an instance of ConfigManager based on static runtime setting
+        config_handler = ConfigManager()
+        # Which is used to prepare simplified configs for human interaction purpose
+        config_unchanged = config_handler.get_simplified_config()
+
+        # When asking the instance if actually unchanged config contains changes
+        has_changed = config_handler.has_changes(config_unchanged)
+        # It is expected to return False since test didn't change anything
+        self.assertFalse(has_changed, 'Unchanged config expected to be interpreted as such')
+
+    def test_str_changed(self):
+        """
+        Tests if the ConfigManager.__has_changes__ detects no changes correctly
+        """
+        # Given is a default config setup
+        ConfigManager.__active_config__ = ConfigManager.get_defaults()
+        # And an instance of ConfigManager based on static runtime setting
+        config_handler = ConfigManager()
+        # Which is used to prepare simplified configs for human interaction purpose
+        config_changed = config_handler.get_simplified_config()
+
+        # Test manipulates the config where string
+        for key in config_changed.keys():
+            if type(config_changed[key]) is str:
+                config_changed[key] = '<UNITTEST IS TESTING HERE>'
+
+        # When asking the instance if changed config contains changes
+        has_changed = config_handler.has_changes(config_changed)
+        # It is expected to return True since test changed all str to contain garbage
+        self.assertTrue(has_changed, 'Changed config expected to be interpreted as such')
+
+    def test_bool_changed(self):
+        """
+        Tests if the ConfigManager.__has_changes__ detects no changes correctly
+        """
+        # Given is a default config setup
+        ConfigManager.__active_config__ = ConfigManager.get_defaults()
+        # And an instance of ConfigManager based on static runtime setting
+        config_handler = ConfigManager()
+        # Which is used to prepare simplified configs for human interaction purpose
+        config_changed = config_handler.get_simplified_config()
+
+        # Test manipulates the config where string
+        for key in config_changed.keys():
+            if type(config_changed[key]) is bool:
+                config_changed[key] = not config_changed[key]
+
+        # When asking the instance if changed config contains changes
+        has_changed = config_handler.has_changes(config_changed)
+        # It is expected to return True since test changed all bool to flip
+        self.assertTrue(has_changed, 'Changed config expected to be interpreted as such')
 
 
 if __name__ == '__main__':

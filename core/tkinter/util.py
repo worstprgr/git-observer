@@ -1,7 +1,8 @@
-from tkinter import Button, NONE, BOTH, DISABLED, VERTICAL, Text, Scrollbar, Frame, Tk, Toplevel
+from tkinter import Button, NONE, BOTH, DISABLED, VERTICAL, Text, Scrollbar, Frame, Tk, Toplevel, Entry, StringVar, \
+    Checkbutton, BooleanVar
 from tkinter.constants import RIGHT, Y
-from core.logger import Logger
 
+from core.logger import Logger
 
 ZOOMED = 'zoomed'
 '''
@@ -10,13 +11,39 @@ window state when maximized
 '''
 
 
+class Textbox(Entry):
+    """
+    Inheritance of Entry that actually has a text property
+    """
+
+    def __init__(self, text: str = None, **kwargs):
+        self.text = StringVar(value=text)
+        super().__init__(textvariable=self.text, **kwargs)
+
+    def get(self) -> str:
+        return '' if not self.text else self.text.get()
+
+
+class Checkbox(Checkbutton):
+    """
+    Inheritance of Checkbutton that actually has a checked property
+    """
+
+    def __init__(self, init_val: bool = False, **kwargs):
+        self.checked = BooleanVar(value=init_val)
+        super().__init__(variable=self.checked, **kwargs)
+
+    def get(self) -> bool:
+        return False if not self.checked else self.checked.get()
+
+
 class ToplevelModal(Toplevel):
     """
     A Toplevel that disables given parent and
     only resumes parent activity when closed
     """
 
-    def __init__(self, root: Tk):
+    def __init__(self, root: Tk, width_percent: float = 0.35, height_percent: float = 0.2):
         """
         Initializes a new modal instance of this
         class inherited from Toplevel
@@ -28,7 +55,7 @@ class ToplevelModal(Toplevel):
         self.root = root
         self.protocol('WM_DELETE_WINDOW', self.close)
         self.resizable(width=False, height=False)
-        geo_loc = TkUtil.calculate_form_geometry(root, 0.35, 0.2)
+        geo_loc = TkUtil.calculate_form_geometry(root, width_percent, height_percent)
         self.geometry(geo_loc)
         self.wait_visibility()
         self.grab_set()

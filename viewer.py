@@ -1,17 +1,18 @@
 import webbrowser as wb
 from collections import namedtuple
 from datetime import datetime
-from tkinter import BOTH, BOTTOM, NORMAL, NW, RIGHT, TOP, X, Y, ttk, PhotoImage, LEFT
+from tkinter import BOTH, BOTTOM, NORMAL, RIGHT, X, Y, ttk, PhotoImage, LEFT, Button, W
 from tkinter import Tk, Frame, Scrollbar, Label
+from tkinter.font import Font
 from tkinter.ttk import Sizegrip
-from core.event import StatusEventArgs
 
-from observer import GitObserverThread
-from core.tkinter.TkUtil import TkUtil, ZOOMED
+from core.event import StatusEventArgs
+from core.paths import Paths
+from core.tkinter.util import TkUtil, ZOOMED
+from core.tkinter.config import ConfigWindow
 from core.transport import Observation, ObservationEventArgs, Commit
 from core.transport import ObservationUtil
-from core.paths import Paths
-
+from observer import GitObserverThread
 
 c_paths = Paths()
 Point = namedtuple("Point", "x y")
@@ -54,17 +55,13 @@ class GitObserverViewer(Tk):
         self.view_frame = Frame(self)
         self.view_frame.pack(fill=BOTH, expand=True)
 
-        # scrollbar
         # H-Scroll container since contains a scroll bar and a sizegrip
         self.h_scroll_stack = Frame(self.view_frame, background='lightgray')
         self.sizegrip = Sizegrip(self.h_scroll_stack)
         self.sizegrip.pack(side=RIGHT, fill=Y)
 
-        self.status_bar = Label(self.h_scroll_stack, text="Initializing...", background='lightgray')
-        self.status_bar.pack(side=TOP, anchor=NW, padx=3)
-
         self.view_scroll_x = Scrollbar(self.h_scroll_stack, orient='horizontal')
-        self.view_scroll_x.pack(side=LEFT, fill=X, expand=True)
+        self.view_scroll_x.pack(side=BOTTOM, fill=X, expand=True)
         self.h_scroll_stack.pack(side=BOTTOM, fill=X)
 
         self.view_scroll_y = Scrollbar(self.view_frame, orient='vertical')
@@ -72,6 +69,21 @@ class GitObserverViewer(Tk):
 
         self.tv_commits = ttk.Treeview(self.view_frame, show="headings",
                                        yscrollcommand=self.view_scroll_y.set, xscrollcommand=self.view_scroll_x.set)
+
+        # Bottom stack
+        self.bottom_stack = Frame(self.view_frame, background='lightgray')
+
+        font = Font(family='Arial', size=16, weight='bold')
+        self.config_command = Button(master=self.bottom_stack, text='\u2699', anchor=W, pady=0, padx=0,
+                                     command=self.on_config, borderwidth=0, background='lightgray')
+        self.config_command['font'] = font
+        self.config_command.pack(side=LEFT, padx=(10, 1))
+
+        self.status_bar = Label(self.bottom_stack, text="Initializing...", background='lightgray', pady=0, padx=0)
+        self.status_bar.pack(side=LEFT, anchor=W)
+
+        self.bottom_stack.pack(side=BOTTOM, fill=X)
+
         # Bind cell click event to open_link
         self.tv_commits.bind('<Double-1>', self.cell_double_click)
         self.tv_commits.bind('<Control-Button-1>', self.control_click)
@@ -246,7 +258,7 @@ class GitObserverViewer(Tk):
         col_num = int(col.split('#')[1])
         # Return on Date click
         if col_num <= 1:
-            return None
+            return
 
         # Adjust number to ignore first date column (e.g. col 2 is col 1 in data)
         col_num -= 1
@@ -255,3 +267,7 @@ class GitObserverViewer(Tk):
             return None
 
         return self.grid_data[row_idx][col_num - 1]
+
+    def on_config(self):
+        config_window = ConfigWindow(self, self.config)
+        config_window.mainloop()

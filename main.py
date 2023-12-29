@@ -73,7 +73,7 @@ def call_viewer(config: Namespace, sig_recv: SignalReceiver) -> None:
 
 
 if __name__ == '__main__':
-    app_config = ConfigManager.get_config()
+    app_config = ConfigManager.get_app_config()
     has_desktop = EnvUtils().is_desktop()
 
     # React to SIGTERM/-INIT

@@ -1,6 +1,6 @@
 import unittest
 
-from core.tkinter.TkUtil import TkUtil
+from core.tkinter.util import TkUtil
 
 
 class TkUtilTest(unittest.TestCase):

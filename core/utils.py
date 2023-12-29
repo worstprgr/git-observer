@@ -52,7 +52,7 @@ class PathUtils:
             parent_dir = os.path.dirname(current_dir)
             if parent_dir == current_dir:
                 break
-            current_dir = parent_dir
+            current_dir = str(parent_dir)
         raise RuntimeError("Root directory not found within the specified search depth")
 
     @staticmethod

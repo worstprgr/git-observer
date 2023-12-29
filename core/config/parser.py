@@ -4,7 +4,6 @@ from configparser import ConfigParser
 import core.paths
 from core.utils import TypeUtil, PathUtils
 
-
 c_paths = core.paths.Paths()
 
 
@@ -40,7 +39,7 @@ class IniConfigParser(ConfigSourceParser):
     its configuration based on *.ini files
     """
 
-    def __init__(self, default_config: dict, config_file: str = c_paths.CONFIG_INI):
+    def __init__(self, default_config: dict | None, config_file: str = c_paths.CONFIG_INI):
         super().__init__(default_config)
         self.config_ini_file: str = config_file
 
@@ -66,7 +65,6 @@ class IniConfigParser(ConfigSourceParser):
             file_value = None
             if key in parser['Default']:
                 file_value = parser['Default'][key]
-
             if file_value:
                 config_result.__dict__[internal_key] = TypeUtil.parse_value(file_value, def_value)
         return config_result
@@ -79,17 +77,20 @@ class IniConfigParser(ConfigSourceParser):
         """
         if self.has_config():
             return
+        self.persist_config(self.default_config)
 
+    def persist_config(self, persistent_config: dict):
+        """
+        Writes given configuration to current file of this instance
+        """
         config = ConfigParser()
         config.add_section('Default')
-        for key in self.default_config.keys():
-            value = self.default_config[key]
+        for key in persistent_config.keys():
+            value = persistent_config[key]
             if type(value) is list:
                 config['Default'][key] = str.join(', ', value)
             else:
                 config['Default'][key] = str(value)
-        config['Default'].show_viewer = True
-        config['Default'].descending = True
         with open(self.config_ini_file, 'w', encoding='utf8') as ini:
             config.write(ini)
 
