@@ -1,4 +1,5 @@
 import webbrowser as wb
+from collections import namedtuple
 from datetime import datetime
 from tkinter import BOTH, BOTTOM, NORMAL, NW, RIGHT, TOP, X, Y, ttk, PhotoImage, LEFT
 from tkinter import Tk, Frame, Scrollbar, Label
@@ -7,12 +8,16 @@ from core.event import StatusEventArgs
 
 from observer import GitObserverThread
 from core.tkinter.TkUtil import TkUtil
-from core.transport import Observation, ObservationEventArgs
+from core.transport import Observation, ObservationEventArgs, Commit
 from core.transport import ObservationUtil
 from core.paths import Paths
 
 
 c_paths = Paths()
+Point = namedtuple("Point", "x y")
+"""
+namedtuple representing X and Y coordinates
+"""
 
 
 class GitObserverViewer(Tk):
@@ -32,11 +37,9 @@ class GitObserverViewer(Tk):
         self.config = app_config
         self.config.descending = True
 
-        # Instantiate GitObserver with received conf
-        self.observer = GitObserverThread(self.config)
-        self.observer.OnLoaded += self.observer_loaded
-        self.observer.OnStatus += self.observer_status
-        self.observer.start()
+        # Instance wide store row number and two-dimensional rows and their commits (columns)
+        self.row_count: int = 0
+        self.grid_data: list[list[Commit | None]] = list()
 
         # Get notified when closed
         self.protocol("WM_DELETE_WINDOW", self.root_delete)
@@ -71,10 +74,17 @@ class GitObserverViewer(Tk):
                                        yscrollcommand=self.view_scroll_y.set, xscrollcommand=self.view_scroll_x.set)
         # Bind cell click event to open_link
         self.tv_commits.bind('<Double-1>', self.cell_double_click)
+        self.tv_commits.bind('<Control-Button-1>', self.control_click)
         self.tv_commits.pack(fill=X, expand=True)
         self.view_scroll_y.config(command=self.tv_commits.yview)
         self.view_scroll_x.config(command=self.tv_commits.xview)
         self.create_columns(app_config.logfolders)
+
+        # Finally instantiate GitObserver with received conf
+        self.observer = GitObserverThread(self.config)
+        self.observer.OnLoaded += self.observer_loaded
+        self.observer.OnStatus += self.observer_status
+        self.observer.start()
 
     def root_delete(self):
         """
@@ -113,15 +123,16 @@ class GitObserverViewer(Tk):
             return
 
         # add data
-        row_count = 0
+        update_row_count = 0
         for folder in observations:
             commit_count = len(folder.commits)
-            if commit_count > row_count:
-                row_count = commit_count
+            if commit_count > update_row_count:
+                update_row_count = commit_count
 
-        for row_idx in range(0, row_count):
+        for row_idx in range(0, update_row_count):
             row_values = []
-            if row_idx == (row_count - 1):
+            row_commits: list[Commit | None] = list()
+            if row_idx == (update_row_count - 1):
                 row_values.append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
             else:
                 row_values.append('')
@@ -129,13 +140,15 @@ class GitObserverViewer(Tk):
             for folder in observations:
                 if row_idx >= len(folder.commits):
                     row_values.append('')
-                    row_values.append('')
+                    row_commits.append(None)
                     continue
                 commit = folder.commits[row_idx]
                 value = f"{commit.author}: {commit.message} ({commit.date.strftime('%Y-%m-%d %H:%M:%S')})"
                 row_values.append(value)
-                row_values.append(commit.sha1)
+                row_commits.append(commit)
+            self.grid_data.insert(0, row_commits)
             self.tv_commits.insert(parent='', index=0, values=row_values)
+            self.row_count += 1
 
         self.tv_commits.pack_forget()
         self.tv_commits.pack(fill=BOTH, expand=True)
@@ -154,7 +167,6 @@ class GitObserverViewer(Tk):
         column_names = ['Last updated']
         for folder in observations:
             column_names.append(f'{folder}')
-            column_names.append('Link')
 
         # define our column
         self.tv_commits['columns'] = column_names
@@ -163,49 +175,71 @@ class GitObserverViewer(Tk):
         self.tv_commits.column(0, anchor="nw", minwidth=145, stretch=False, width=145)
 
         # format our column
-        for col_idx in range(1, len(column_names) - 1):
-            min_width = 150
-            is_meta = col_idx % 2 != 0
-            if is_meta:
-                min_width = 75
+        for col_idx in range(1, len(column_names)):
             self.tv_commits.heading(col_idx, anchor="nw", text=column_names[col_idx])
-            self.tv_commits.column(col_idx, anchor="nw", minwidth=min_width, stretch=True, width=min_width)
+            self.tv_commits.column(col_idx, anchor="nw", minwidth=150, stretch=True, width=150)
         self.tv_commits.pack(fill=BOTH, expand=True)
 
-    def cell_double_click(self, event):
+    def control_click(self, event):
         """
-        Event handler for TreeView purpose.
-        Will expect third and then every second column value to represent
-        a web link.
-        Does nothing when different column is hit or link is empty
+        Event handler for TreeView purpose when clicking with Ctrl clicked.
+        Will get currently selected Commit and opens web browser leading to [origin]/[SHA1]
         :param event: Mouse click event
         :return: None
         """
+        commit = self.get_row_on_position(Point(event.x, event.y))
+        if not commit:
+            return
+
+        sha1 = commit.sha1
+        if len(sha1) > 0:
+            # Extract link from clicked and found cell
+            link = f"{self.config.origin}{sha1}"
+            # open the link in default browser
+            wb.open_new_tab(link)
+        for item in self.tv_commits.selection():
+            self.tv_commits.selection_remove(item)
+
+    def cell_double_click(self, event):
+        """
+        Event handler for TreeView purpose when double-clicking.
+        Will get currently selected Commit and opens a detail form for whole commit info
+        :param event: Mouse click event
+        :return: None
+        """
+        commit = self.get_row_on_position(Point(event.x, event.y))
+        if not commit:
+            return
+        # Extract link from next cell of clicked cell
+        sha1 = commit.sha1
+        if len(sha1) > 0:
+            git_medium_info = self.observer.get_git_show(sha1)
+            TkUtil.show_message_dialog(self, git_medium_info)
+
+    def get_row_on_position(self, pos: Point) -> Commit | None:
+        """
+        Gets the currently selected row found by coordinates x and y
+        and returns corresponding Commit or None
+        :param pos: Point with X and Y coordinates
+        :return: Commit or None
+        """
         # Get the associated TreeView widget
-        tree = event.widget
-        # Try to get region by mouse event args
-        region = tree.identify_region(event.x, event.y)
-        col = tree.identify_column(event.x)
-        iid = tree.identify('item', event.x, event.y)
+        tree = self.tv_commits
+        # Try to get region by position
+        region = tree.identify_region(pos.x, pos.y)
+        col = tree.identify_column(pos.x)
+        iid = tree.identify('item', pos.x, pos.y)
+        row_idx = tree.index(iid)
+        # The identifier of columns has a trailing '#' which needs to be removed
         col_num = int(col.split('#')[1])
         # Return on Date click
         if col_num <= 1:
-            return
+            return None
 
-        # Minus first column (last update), then every second col is a link col
+        # Adjust number to ignore first date column (e.g. col 2 is col 1 in data)
+        col_num -= 1
+
         if not region == 'cell':
-            return
+            return None
 
-        if (col_num - 1) % 2 == 0:
-            # Extract link from clicked and found cell
-            sha1 = tree.item(iid)['values'][col_num - 1]
-            link = f"{self.config.origin}{sha1}"
-            if len(link) > 0:
-                # open the link in default browser
-                wb.open_new_tab(link)
-        else:
-            # Extract link from next cell of clicked cell
-            sha1 = str(tree.item(iid)['values'][col_num])
-            if len(sha1) > 0:
-                git_medium_info = self.observer.get_git_show(sha1)
-                TkUtil.show_message_dialog(self, git_medium_info)
+        return self.grid_data[row_idx][col_num - 1]
