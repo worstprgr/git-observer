@@ -7,7 +7,7 @@ from tkinter.ttk import Sizegrip
 from core.event import StatusEventArgs
 
 from observer import GitObserverThread
-from core.tkinter.TkUtil import TkUtil
+from core.tkinter.TkUtil import TkUtil, ZOOMED
 from core.transport import Observation, ObservationEventArgs, Commit
 from core.transport import ObservationUtil
 from core.paths import Paths
@@ -100,6 +100,7 @@ class GitObserverViewer(Tk):
         """
         Event handler that reacts on external event
         of successfully loaded observations
+        :param observation_args: newly loaded observations
         :return: None
         """
         if observation_args is None:
@@ -107,7 +108,18 @@ class GitObserverViewer(Tk):
         self.update_view(observation_args.observations)
 
     def observer_status(self, status_args: StatusEventArgs):
-        if self.wm_state() == NORMAL:
+        """
+        Event handler that react on status changed triggered
+        by class member observer
+        :param status_args: current status of observer
+        :return: None
+        """
+        if not self.status_bar:
+            return
+
+        # Either window is in normal state or its maximized
+        # which is called 'zoomed' using Windows
+        if self.wm_state() == NORMAL or self.wm_state() == ZOOMED:
             status_text = f'Status: {status_args.status}'
             self.status_bar.config(text=status_text)
 
