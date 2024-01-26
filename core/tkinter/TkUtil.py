@@ -3,6 +3,13 @@ from tkinter.constants import RIGHT, Y
 from core.logger import Logger
 
 
+ZOOMED = 'zoomed'
+'''
+Constant representing Windows
+window state when maximized
+'''
+
+
 class ToplevelModal(Toplevel):
     """
     A Toplevel that disables given parent and
