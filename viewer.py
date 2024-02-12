@@ -6,6 +6,7 @@ from tkinter import Tk, Frame, Scrollbar, Label
 from tkinter.font import Font
 from tkinter.ttk import Sizegrip
 
+import _version
 from core.event import StatusEventArgs
 from core.paths import Paths
 from core.tkinter.util import TkUtil, ZOOMED
@@ -48,7 +49,7 @@ class GitObserverViewer(Tk):
         # Open PhotoImage to be passed to created form
         icon = PhotoImage(file=c_paths.FAVICON)
         self.iconphoto(True, icon)
-        self.title('Git Log Observer')
+        self.title(f'Observer for Git {_version.__version__}')
         geo = TkUtil.calculate_form_geometry(self, 0.7, 0.5)
         self.geometry(geo)
 
