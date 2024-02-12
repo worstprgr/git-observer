@@ -1,7 +1,30 @@
 #!/bin/env python
+"""
+Observer for Git
+
+A Python script to observe a directory in a checked-out repository.
+The execution location is independent of the repository, so an automated call is possible.
+Output will contain commits from past 7 days, each with a link to pre-defined origin (e.g. BitBucket, GitHub) as well
+
+Copyright (C) 2024  Pitcher Seven <https://github.com/PitcherSeven> and worstprgr <adam@seishin.io> GPG Key: key.seishin.io
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 from argparse import Namespace
 from time import sleep
 
+import _version
 from core.envcheck import EnvironmentCheck
 from core.config.management import ConfigManager
 from core.transport import Observation, ObservationUtil
@@ -39,7 +62,7 @@ def call_shell(config: Namespace, interval_ms: int) -> None:
     """
     global __run_main
 
-    log.info("Starting GitObserver shell")
+    log.info(f"Starting Observer for Git {_version.__version__} shell")
     observer = GitObserver(config)
     ms_since_last_iteration = 0
     while __run_main:
