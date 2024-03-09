@@ -11,6 +11,14 @@ Output will contain commits from past 7 days, each with a link to pre-defined or
 The Viewer can be called either by passing argument -ui/--use-viewer or by configuring so in configuration file.  
 _See [Viewer](./doc/Viewer.md)_
 
+## Dependencies
+For consumers, you'll need only Python 3.11+ (might work with 3.8, but it's not tested).  
+
+For contributors, you'll need:  
+- pytest
+- pyflakes
+- flake8
+
 ## Command Line Usage
 
 |                       |                                                                                                       |
@@ -24,3 +32,14 @@ _See [Viewer](./doc/Viewer.md)_
 | -desc<br>--descending | Flag to call _git log_ with reverse parameter<br>_Default TRUE when used with viewer_                 |
 | -cnf<br>--config-file | _Absolute path of *.ini file containing the application configuration_                                |
 
+## Running Tests
+Inside the projects root directory, you can just invoke `python -m pytest`  
+
+If you want to run tests, linting and static code analysis, you can use that snippet:  
+```commandline
+cd path-to-root\git-observer
+rem ================================= Starting All Tests =================================
+flake8 . --count --ignore=W293,E501,W503,W504 --max-complexity=10 --max-line-length=120 --statistics --show-source
+pyflakes .
+python -m pytest
+```
